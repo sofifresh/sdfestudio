@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SDF — Estudio de Diseño</title>
+    <style>
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: #080808;
+            color: #f0f0f0;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* ─── NAV ─────────────────────────────────────────── */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 1.8rem 5vw;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 100;
+        }
+
+        .nav-logo {
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: 0.35em;
+            color: white;
+            text-decoration: none;
+            text-transform: uppercase;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 3rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: rgba(255, 255, 255, 0.55);
+            text-decoration: none;
+            font-size: 0.78rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: white;
+        }
+
+        .nav-menu-btn {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 4px;
+        }
+
+        .nav-menu-btn span {
+            display: block;
+            width: 24px;
+            height: 1px;
+            background: white;
+        }
+
+        /* ─── HERO ────────────────────────────────────────── */
+        #hero {
+            position: relative;
+            width: 100%;
+            height: 100dvh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        #canvas-container {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        #canvas-container canvas {
+            display: block;
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        .hero-tagline {
+            position: absolute;
+            bottom: 12%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: clamp(0.65rem, 1.5vw, 0.8rem);
+            letter-spacing: 0.5em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.35);
+            white-space: nowrap;
+            z-index: 10;
+        }
+
+        .scroll-indicator {
+            position: absolute;
+            bottom: 4%;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            color: rgba(255, 255, 255, 0.25);
+            font-size: 0.6rem;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+        }
+
+        .scroll-indicator::after {
+            content: '';
+            width: 1px;
+            height: 36px;
+            background: rgba(255, 255, 255, 0.25);
+            animation: scrollDrop 2s ease infinite;
+        }
+
+        @keyframes scrollDrop {
+            0%   { transform: scaleY(0); transform-origin: top; opacity: 1; }
+            50%  { transform: scaleY(1); transform-origin: top; opacity: 1; }
+            51%  { transform: scaleY(1); transform-origin: bottom; opacity: 1; }
+            100% { transform: scaleY(0); transform-origin: bottom; opacity: 0; }
+        }
+
+        /* ─── SECTIONS ────────────────────────────────────── */
+        .section-inner {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 9rem 5vw;
+        }
+
+        .label {
+            font-size: 0.68rem;
+            letter-spacing: 0.45em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.35);
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: clamp(2.2rem, 5vw, 4.5rem);
+            font-weight: 700;
+            line-height: 1.08;
+            letter-spacing: -0.02em;
+            margin-bottom: 2rem;
+        }
+
+        .section-body {
+            font-size: 1.05rem;
+            line-height: 1.85;
+            color: rgba(255, 255, 255, 0.5);
+            max-width: 560px;
+        }
+
+        /* ─── WORK ────────────────────────────────────────── */
+        #work {
+            border-top: 1px solid rgba(255, 255, 255, 0.07);
+        }
+
+        .work-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-top: 4rem;
+        }
+
+        .work-item {
+            aspect-ratio: 16 / 10;
+            background: #111;
+            border-radius: 3px;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .work-item:hover {
+            transform: scale(0.975);
+        }
+
+        .work-item::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 60%);
+        }
+
+        .work-item-info {
+            position: absolute;
+            bottom: 1.5rem;
+            left: 1.5rem;
+            z-index: 1;
+        }
+
+        .work-item-info h3 {
+            font-size: 0.95rem;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+        }
+
+        .work-item-info p {
+            font-size: 0.72rem;
+            letter-spacing: 0.15em;
+            color: rgba(255,255,255,0.45);
+            text-transform: uppercase;
+            margin-top: 0.25rem;
+        }
+
+        /* ─── ABOUT ───────────────────────────────────────── */
+        #about {
+            border-top: 1px solid rgba(255, 255, 255, 0.07);
+        }
+
+        /* ─── CONTACT ─────────────────────────────────────── */
+        #contact {
+            border-top: 1px solid rgba(255, 255, 255, 0.07);
+        }
+
+        .contact-cta {
+            display: inline-block;
+            margin-top: 2.5rem;
+            font-size: clamp(1.4rem, 3.5vw, 2.8rem);
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            color: white;
+            text-decoration: none;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: 0.2rem;
+            transition: border-color 0.35s;
+        }
+
+        .contact-cta:hover {
+            border-color: white;
+        }
+
+        /* ─── FOOTER ──────────────────────────────────────── */
+        footer {
+            border-top: 1px solid rgba(255, 255, 255, 0.07);
+            padding: 2rem 5vw;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: rgba(255, 255, 255, 0.25);
+            font-size: 0.75rem;
+            letter-spacing: 0.1em;
+        }
+
+        /* ─── RESPONSIVE ──────────────────────────────────── */
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .nav-menu-btn { display: flex; }
+
+            .work-grid { grid-template-columns: 1fr; }
+
+            footer {
+                flex-direction: column;
+                gap: 0.75rem;
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .section-inner { padding: 6rem 6vw; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a class="nav-logo" href="#">SDF</a>
+        <ul class="nav-links">
+            <li><a href="#work">Trabajo</a></li>
+            <li><a href="#about">Estudio</a></li>
+            <li><a href="#contact">Contacto</a></li>
+        </ul>
+        <button class="nav-menu-btn" aria-label="Menú">
+            <span></span><span></span><span></span>
+        </button>
+    </nav>
+
+    <!-- HERO ─────────────────────────────────────────────── -->
+    <section id="hero">
+        <div id="canvas-container"></div>
+        <p class="hero-tagline">Estudio de Diseño</p>
+        <div class="scroll-indicator">Scroll</div>
+    </section>
+
+    <!-- WORK ─────────────────────────────────────────────── -->
+    <section id="work">
+        <div class="section-inner">
+            <p class="label">Trabajo</p>
+            <h2 class="section-title">Proyectos<br>Seleccionados</h2>
+            <div class="work-grid">
+                <div class="work-item">
+                    <div class="work-item-info">
+                        <h3>Identidad Corporativa</h3>
+                        <p>Branding · 2025</p>
+                    </div>
+                </div>
+                <div class="work-item">
+                    <div class="work-item-info">
+                        <h3>Experiencia Digital</h3>
+                        <p>Web · 2025</p>
+                    </div>
+                </div>
+                <div class="work-item">
+                    <div class="work-item-info">
+                        <h3>Diseño Editorial</h3>
+                        <p>Print · 2024</p>
+                    </div>
+                </div>
+                <div class="work-item">
+                    <div class="work-item-info">
+                        <h3>Packaging</h3>
+                        <p>Producto · 2024</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ABOUT ────────────────────────────────────────────── -->
+    <section id="about">
+        <div class="section-inner">
+            <p class="label">Estudio</p>
+            <h2 class="section-title">Diseño que<br>comunica</h2>
+            <p class="section-body">
+                SDF es un estudio de diseño enfocado en crear experiencias visuales
+                significativas. Trabajamos en la intersección del diseño gráfico,
+                la identidad de marca y las experiencias digitales.
+            </p>
+        </div>
+    </section>
+
+    <!-- CONTACT ──────────────────────────────────────────── -->
+    <section id="contact">
+        <div class="section-inner">
+            <p class="label">Contacto</p>
+            <h2 class="section-title">Hablemos</h2>
+            <a class="contact-cta" href="mailto:hola@sdf.studio">hola@sdf.studio</a>
+        </div>
+    </section>
+
+    <footer>
+        <span>© 2026 SDF Estudio de Diseño</span>
+        <span>Buenos Aires, Argentina</span>
+    </footer>
+
+    <!-- THREE.JS ──────────────────────────────────────────── -->
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+        }
+    }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { FontLoader } from 'three/addons/loaders/FontLoader.js';
+        import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
+
+        const container = document.getElementById('canvas-container');
+
+        // ── Renderer ───────────────────────────────────────
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.setClearColor(0x000000, 0);
+        container.appendChild(renderer.domElement);
+
+        // ── Scene & Camera ─────────────────────────────────
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(
+            45,
+            container.clientWidth / container.clientHeight,
+            0.1,
+            100
+        );
+        camera.position.z = 7;
+
+        // ── Lights ─────────────────────────────────────────
+        scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+
+        const keyLight = new THREE.DirectionalLight(0xffffff, 3);
+        keyLight.position.set(4, 6, 6);
+        scene.add(keyLight);
+
+        const fillLight = new THREE.DirectionalLight(0x88aaff, 1.5);
+        fillLight.position.set(-6, -2, 4);
+        scene.add(fillLight);
+
+        const rimLight = new THREE.DirectionalLight(0xffeedd, 1.2);
+        rimLight.position.set(0, -5, -4);
+        scene.add(rimLight);
+
+        // ── State ──────────────────────────────────────────
+        const mouse         = new THREE.Vector2(9999, 9999);
+        const smoothMouse   = new THREE.Vector2(0, 0);
+        const raycaster     = new THREE.Raycaster();
+        const letterMeshes  = [];
+        let   hoveredMesh   = null;
+
+        // ── Mouse / Touch ──────────────────────────────────
+        function updateMouse(x, y) {
+            mouse.x =  (x / window.innerWidth)  * 2 - 1;
+            mouse.y = -(y / window.innerHeight) * 2 + 1;
+        }
+
+        window.addEventListener('mousemove', e => updateMouse(e.clientX, e.clientY));
+        window.addEventListener('touchmove',  e => {
+            updateMouse(e.touches[0].clientX, e.touches[0].clientY);
+        }, { passive: true });
+
+        // ── Click: explode-regroup ─────────────────────────
+        const letterVelocities = [];
+        window.addEventListener('click', () => {
+            letterMeshes.forEach((m, i) => {
+                letterVelocities[i] = new THREE.Vector3(
+                    (Math.random() - 0.5) * 0.3,
+                    (Math.random() - 0.5) * 0.3,
+                    (Math.random() - 0.5) * 0.15
+                );
+            });
+        });
+
+        // ── Font & Geometry ────────────────────────────────
+        const loader = new FontLoader();
+        loader.load(
+            'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/fonts/helvetiker_bold.typeface.json',
+            (font) => {
+                const letters  = ['S', 'D', 'F'];
+                const SPACING  = 1.8;
+                const TOTAL_W  = SPACING * (letters.length - 1);
+
+                const baseMat = new THREE.MeshStandardMaterial({
+                    color:     0xffffff,
+                    metalness: 0.85,
+                    roughness: 0.15,
+                });
+
+                letters.forEach((char, i) => {
+                    const geo = new TextGeometry(char, {
+                        font,
+                        size:           1.2,
+                        height:         0.28,
+                        curveSegments:  14,
+                        bevelEnabled:   true,
+                        bevelThickness: 0.05,
+                        bevelSize:      0.025,
+                        bevelSegments:  6,
+                    });
+
+                    geo.computeBoundingBox();
+                    const bb = geo.boundingBox;
+                    const cx = -0.5 * (bb.max.x - bb.min.x);
+                    const cy = -0.5 * (bb.max.y - bb.min.y);
+
+                    const mesh = new THREE.Mesh(geo, baseMat.clone());
+                    mesh.position.set(
+                        -TOTAL_W / 2 + i * SPACING + cx,
+                        cy,
+                        0
+                    );
+
+                    mesh.userData = {
+                        originX:     mesh.position.x,
+                        originY:     mesh.position.y,
+                        floatPhase:  i * (Math.PI * 2 / 3),
+                        hoverScale:  1,
+                        hoverZ:      0,
+                        exploding:   false,
+                    };
+
+                    scene.add(mesh);
+                    letterMeshes.push(mesh);
+                    letterVelocities.push(new THREE.Vector3());
+                });
+            }
+        );
+
+        // ── Animation loop ─────────────────────────────────
+        const clock = new THREE.Clock();
+
+        function lerp(a, b, t) { return a + (b - a) * t; }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const t = clock.getElapsedTime();
+
+            // Smooth mouse
+            smoothMouse.x = lerp(smoothMouse.x, mouse.x, 0.06);
+            smoothMouse.y = lerp(smoothMouse.y, mouse.y, 0.06);
+
+            // Hover detection
+            raycaster.setFromCamera(mouse, camera);
+            const hits = raycaster.intersectObjects(letterMeshes);
+            const newHover = hits.length ? hits[0].object : null;
+            if (newHover !== hoveredMesh) {
+                hoveredMesh = newHover;
+                document.body.style.cursor = hoveredMesh ? 'pointer' : 'default';
+            }
+
+            letterMeshes.forEach((mesh, i) => {
+                const ud        = mesh.userData;
+                const isHovered = mesh === hoveredMesh;
+
+                // Float
+                const floatY = Math.sin(t * 0.9 + ud.floatPhase) * 0.1;
+
+                // Hover scale & Z pop
+                const targetScale = isHovered ? 1.18 : 1.0;
+                ud.hoverScale = lerp(ud.hoverScale, targetScale, 0.1);
+                mesh.scale.setScalar(ud.hoverScale);
+
+                const targetZ = isHovered ? 0.7 : 0;
+                ud.hoverZ = lerp(ud.hoverZ, targetZ, 0.1);
+
+                // Apply velocity (click-explode)
+                if (letterVelocities[i].length() > 0.001) {
+                    mesh.position.x += letterVelocities[i].x;
+                    mesh.position.y += letterVelocities[i].y;
+                    mesh.position.z += letterVelocities[i].z;
+                    letterVelocities[i].multiplyScalar(0.92);
+
+                    // Snap back when velocity dies
+                    if (letterVelocities[i].length() <= 0.001) {
+                        letterVelocities[i].set(0, 0, 0);
+                    }
+                } else {
+                    // Return to origin
+                    mesh.position.x = lerp(mesh.position.x, ud.originX, 0.06);
+                    mesh.position.y = lerp(mesh.position.y, ud.originY + floatY, 0.1);
+                    mesh.position.z = lerp(mesh.position.z, ud.hoverZ, 0.1);
+                }
+
+                // Rotation from mouse
+                const targetRX = smoothMouse.y * 0.35 + (isHovered ? 0.08 : 0);
+                const targetRY = smoothMouse.x * 0.55 + Math.sin(t * 0.25 + i) * 0.02;
+                mesh.rotation.x = lerp(mesh.rotation.x, targetRX, 0.05);
+                mesh.rotation.y = lerp(mesh.rotation.y, targetRY, 0.05);
+
+                // Color tint on hover
+                const col = mesh.material.color;
+                if (isHovered) {
+                    col.lerp(new THREE.Color(0xaaccff), 0.08);
+                } else {
+                    col.lerp(new THREE.Color(0xffffff), 0.05);
+                }
+            });
+
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        // ── Resize ─────────────────────────────────────────
+        window.addEventListener('resize', () => {
+            const w = container.clientWidth;
+            const h = container.clientHeight;
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+            renderer.setSize(w, h);
+        });
+    </script>
+
+</body>
+</html>
