@@ -7,17 +7,16 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
 
     <style>
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
         html { scroll-behavior: smooth; }
 
         body {
             background: #080808;
             color: #f0f0f0;
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            font-family: 'Montserrat', system-ui, sans-serif;
             overflow-x: hidden;
         }
 
@@ -30,24 +29,17 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            z-index: 100;
+            z-index: 200;
         }
-
         .nav-logo {
+            font-weight: 900;
             font-size: 1.1rem;
-            font-weight: 700;
             letter-spacing: 0.35em;
             color: white;
             text-decoration: none;
             text-transform: uppercase;
         }
-
-        .nav-links {
-            display: flex;
-            gap: 3rem;
-            list-style: none;
-        }
-
+        .nav-links { display: flex; gap: 3rem; list-style: none; }
         .nav-links a {
             color: rgba(255,255,255,0.5);
             text-decoration: none;
@@ -57,14 +49,13 @@
             transition: color 0.3s;
         }
         .nav-links a:hover { color: white; }
-
         .nav-menu-btn {
             display: none;
             flex-direction: column;
             gap: 5px;
-            cursor: pointer;
             background: none;
             border: none;
+            cursor: pointer;
             padding: 4px;
         }
         .nav-menu-btn span { display: block; width: 24px; height: 1px; background: white; }
@@ -75,20 +66,61 @@
             width: 100%;
             height: 100dvh;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
             overflow: hidden;
+            background: #080808;
         }
 
-        /* Perspectiva sobre el grupo de letras */
+        /* Canvas de red de imágenes (fondo) */
+        #network-canvas {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        /* Contenedor de imágenes flotantes */
+        #photo-field {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .photo-node {
+            position: absolute;
+            border-radius: 3px;
+            overflow: hidden;
+            opacity: 0.75;
+            will-change: transform;
+        }
+        .photo-node img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            filter: grayscale(20%) contrast(1.05);
+        }
+
+        /* Overlay oscuro sobre las fotos para que las letras resalten */
+        #hero-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(8,8,8,0.55);
+            z-index: 2;
+        }
+
+        /* Letras SDF */
         #sdf-wrap {
+            position: relative;
+            z-index: 3;
             display: flex;
             align-items: center;
             justify-content: center;
             perspective: 900px;
-            perspective-origin: 50% 50%;
-            cursor: default;
+            will-change: transform, opacity;
         }
 
         .sdf-letter {
@@ -101,7 +133,6 @@
             will-change: transform;
             user-select: none;
             margin: 0 -0.01em;
-            /* Extrusion 3D con sombras apiladas */
             text-shadow:
                 1px 2px 0 #505050,
                 2px 4px 0 #454545,
@@ -118,11 +149,12 @@
             bottom: 11%;
             left: 50%;
             transform: translateX(-50%);
-            font-size: clamp(0.65rem, 1.5vw, 0.8rem);
+            font-size: clamp(0.6rem, 1.4vw, 0.78rem);
             letter-spacing: 0.5em;
             text-transform: uppercase;
-            color: rgba(255,255,255,0.3);
+            color: rgba(255,255,255,0.4);
             white-space: nowrap;
+            z-index: 3;
         }
 
         .scroll-indicator {
@@ -130,11 +162,12 @@
             bottom: 4%;
             left: 50%;
             transform: translateX(-50%);
+            z-index: 3;
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 6px;
-            color: rgba(255,255,255,0.2);
+            color: rgba(255,255,255,0.25);
             font-size: 0.6rem;
             letter-spacing: 0.3em;
             text-transform: uppercase;
@@ -143,7 +176,7 @@
             content: '';
             width: 1px;
             height: 36px;
-            background: rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.25);
             animation: scrollDrop 2s ease infinite;
         }
         @keyframes scrollDrop {
@@ -153,7 +186,59 @@
             100% { transform: scaleY(0); transform-origin: bottom; }
         }
 
-        /* ─── SECTIONS ─── */
+        /* ─── SOBRE NOSOTROS ─── */
+        #sobre {
+            position: relative;
+            min-height: 100dvh;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+            background: #080808;
+        }
+
+        .sobre-inner {
+            position: relative;
+            z-index: 1;
+            padding: 10vh 5vw;
+            max-width: 1280px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .sobre-title {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 900;
+            font-size: min(13vw, 18vh);
+            line-height: 0.92;
+            letter-spacing: -0.02em;
+            color: #fff;
+            opacity: 0;
+            transform: translateY(60px);
+            transition: opacity 0.9s ease, transform 0.9s ease;
+        }
+        .sobre-title.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .sobre-body {
+            margin-top: 4rem;
+            max-width: 560px;
+            font-size: 1.05rem;
+            line-height: 1.85;
+            color: rgba(255,255,255,0.5);
+            opacity: 0;
+            transform: translateY(40px);
+            transition: opacity 0.9s ease 0.25s, transform 0.9s ease 0.25s;
+        }
+        .sobre-body.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ─── WORK ─── */
+        #work { border-top: 1px solid rgba(255,255,255,0.07); }
+
         .section-inner {
             max-width: 1280px;
             margin: 0 auto;
@@ -183,9 +268,6 @@
             max-width: 560px;
         }
 
-        /* ─── WORK ─── */
-        #work { border-top: 1px solid rgba(255,255,255,0.07); }
-
         .work-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -207,7 +289,7 @@
             content: '';
             position: absolute;
             inset: 0;
-            background: linear-gradient(to top, rgba(0,0,0,.6) 0%, transparent 60%);
+            background: linear-gradient(to top, rgba(0,0,0,.6), transparent 60%);
         }
         .work-item-info {
             position: absolute;
@@ -217,15 +299,14 @@
         .work-item-info h3 { font-size: .95rem; font-weight: 500; letter-spacing: .05em; }
         .work-item-info p  { font-size: .72rem; letter-spacing: .15em; color: rgba(255,255,255,.45); text-transform: uppercase; margin-top: .25rem; }
 
-        /* ─── ABOUT / CONTACT ─── */
-        #about, #contact { border-top: 1px solid rgba(255,255,255,0.07); }
+        /* ─── CONTACT ─── */
+        #contact { border-top: 1px solid rgba(255,255,255,0.07); }
 
         .contact-cta {
             display: inline-block;
             margin-top: 2.5rem;
             font-size: clamp(1.4rem, 3.5vw, 2.8rem);
             font-weight: 700;
-            letter-spacing: -0.01em;
             color: white;
             text-decoration: none;
             border-bottom: 2px solid rgba(255,255,255,.2);
@@ -255,6 +336,7 @@
         }
         @media (max-width: 480px) {
             .section-inner { padding: 6rem 6vw; }
+            .sobre-inner { padding: 8vh 6vw; }
         }
     </style>
 </head>
@@ -263,8 +345,8 @@
     <nav>
         <a class="nav-logo" href="#">SDF</a>
         <ul class="nav-links">
+            <li><a href="#sobre">Nosotros</a></li>
             <li><a href="#work">Trabajo</a></li>
-            <li><a href="#about">Estudio</a></li>
             <li><a href="#contact">Contacto</a></li>
         </ul>
         <button class="nav-menu-btn" aria-label="Menú">
@@ -272,18 +354,36 @@
         </button>
     </nav>
 
-    <!-- HERO -->
+    <!-- HERO ──────────────────────────────────────────────── -->
     <section id="hero">
+        <canvas id="network-canvas"></canvas>
+        <div id="photo-field"></div>
+        <div id="hero-overlay"></div>
+
         <div id="sdf-wrap">
             <span class="sdf-letter" id="sl-s">S</span>
             <span class="sdf-letter" id="sl-d">D</span>
             <span class="sdf-letter" id="sl-f">F</span>
         </div>
+
         <p class="hero-tagline">Estudio de Diseño</p>
         <div class="scroll-indicator">Scroll</div>
     </section>
 
-    <!-- WORK -->
+    <!-- SOBRE NOSOTROS ────────────────────────────────────── -->
+    <section id="sobre">
+        <div class="sobre-inner">
+            <h2 class="sobre-title">Sobre<br>Nosotros</h2>
+            <p class="sobre-body">
+                SDF es un estudio de diseño enfocado en crear experiencias visuales
+                significativas. Trabajamos en la intersección del diseño gráfico,
+                la identidad de marca y las experiencias digitales, con una mirada
+                social y un compromiso con las comunidades que nos rodean.
+            </p>
+        </div>
+    </section>
+
+    <!-- WORK ──────────────────────────────────────────────── -->
     <section id="work">
         <div class="section-inner">
             <p class="label">Trabajo</p>
@@ -297,16 +397,7 @@
         </div>
     </section>
 
-    <!-- ABOUT -->
-    <section id="about">
-        <div class="section-inner">
-            <p class="label">Estudio</p>
-            <h2 class="section-title">Diseño que<br>comunica</h2>
-            <p class="section-body">SDF es un estudio de diseño enfocado en crear experiencias visuales significativas. Trabajamos en la intersección del diseño gráfico, la identidad de marca y las experiencias digitales.</p>
-        </div>
-    </section>
-
-    <!-- CONTACT -->
+    <!-- CONTACT ───────────────────────────────────────────── -->
     <section id="contact">
         <div class="section-inner">
             <p class="label">Contacto</p>
@@ -321,117 +412,221 @@
     </footer>
 
     <script>
-        const letters = [
-            document.getElementById('sl-s'),
-            document.getElementById('sl-d'),
-            document.getElementById('sl-f'),
-        ];
+    /* ═══════════════════════════════════════════════════════
+       FOTOS FLOTANTES + RED
+    ═══════════════════════════════════════════════════════ */
+    const PHOTOS = [
+        'img/foto1.jpg','img/foto2.jpg','img/foto3.jpg',
+        'img/foto4.jpg','img/foto5.jpg','img/foto6.jpg',
+        'img/foto7.jpg','img/foto8.jpg','img/foto9.jpg',
+    ];
 
-        // Estado por letra
-        const state = letters.map(el => ({
+    // Tamaños variados por foto (w%, h%)
+    const SIZES = [
+        [18,24],[14,18],[20,26],[13,17],[17,22],
+        [15,20],[19,25],[12,16],[16,21],
+    ];
+
+    // Posiciones iniciales (% del viewport, evitando el centro)
+    const POSITIONS = [
+        [4,  5 ], [75, 8 ], [60, 55], [2,  60],
+        [82, 40], [30, 70], [50, 10], [20, 35],
+        [85, 72],
+    ];
+
+    // Velocidades de parallax diferentes por foto (factor)
+    const SPEEDS = [0.08, 0.14, 0.06, 0.12, 0.10, 0.07, 0.15, 0.09, 0.11];
+
+    const field  = document.getElementById('photo-field');
+    const canvas = document.getElementById('network-canvas');
+    const ctx    = canvas.getContext('2d');
+
+    // Crea nodos de foto
+    const nodes = PHOTOS.map((src, i) => {
+        const el  = document.createElement('div');
+        el.className = 'photo-node';
+        const [w, h] = SIZES[i];
+        const [x, y] = POSITIONS[i];
+        el.style.cssText = `
+            width:${w}vw; height:${h}vw;
+            left:${x}vw; top:${y}vh;
+        `;
+        const img = document.createElement('img');
+        img.src = src;
+        img.loading = 'lazy';
+        el.appendChild(img);
+        field.appendChild(el);
+
+        return {
             el,
-            ox: 0, oy: 0,   // centro original (px)
-            dx: 0, dy: 0,   // desplazamiento actual
-            vx: 0, vy: 0,   // velocidad
-        }));
+            baseX: x,   // % vw
+            baseY: y,   // % vh
+            speed: SPEEDS[i],
+            cx: 0, cy: 0, // centro actual en px (para líneas)
+        };
+    });
 
-        // Mouse normalizado [-1, 1]
-        let mx = 0, my = 0;
-        let smx = 0, smy = 0; // suavizado
+    // Resize canvas
+    function resizeCanvas() {
+        canvas.width  = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
 
-        function onMouseMove(e) {
-            mx = (e.clientX / window.innerWidth  - 0.5) * 2;
-            my = (e.clientY / window.innerHeight - 0.5) * 2;
+    // Actualiza centros de nodos para dibujar la red
+    function updateNodeCenters() {
+        nodes.forEach(n => {
+            const r = n.el.getBoundingClientRect();
+            n.cx = r.left + r.width  / 2;
+            n.cy = r.top  + r.height / 2;
+        });
+    }
+
+    // Dibuja líneas entre nodos cercanos
+    const LINE_DIST = Math.min(window.innerWidth, window.innerHeight) * 0.55;
+
+    function drawNetwork() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for (let i = 0; i < nodes.length; i++) {
+            for (let j = i + 1; j < nodes.length; j++) {
+                const dx   = nodes[j].cx - nodes[i].cx;
+                const dy   = nodes[j].cy - nodes[i].cy;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                if (dist < LINE_DIST) {
+                    const alpha = (1 - dist / LINE_DIST) * 0.25;
+                    ctx.beginPath();
+                    ctx.strokeStyle = `rgba(255,255,255,${alpha})`;
+                    ctx.lineWidth   = 0.6;
+                    ctx.moveTo(nodes[i].cx, nodes[i].cy);
+                    ctx.lineTo(nodes[j].cx, nodes[j].cy);
+                    ctx.stroke();
+                }
+            }
         }
-        function onTouch(e) {
-            mx = (e.touches[0].clientX / window.innerWidth  - 0.5) * 2;
-            my = (e.touches[0].clientY / window.innerHeight - 0.5) * 2;
-        }
+    }
 
-        window.addEventListener('mousemove', onMouseMove);
-        window.addEventListener('touchmove', onTouch, { passive: true });
+    /* ═══════════════════════════════════════════════════════
+       LETRAS SDF — REPULSIÓN + SCROLL EXIT
+    ═══════════════════════════════════════════════════════ */
+    const letters = [
+        document.getElementById('sl-s'),
+        document.getElementById('sl-d'),
+        document.getElementById('sl-f'),
+    ];
+    const sdfWrap   = document.getElementById('sdf-wrap');
 
-        // Guarda posición central original de cada letra
-        function cacheOrigins() {
-            state.forEach(s => {
-                const r = s.el.getBoundingClientRect();
-                s.ox = r.left + r.width  / 2;
-                s.oy = r.top  + r.height / 2;
-            });
-        }
+    const state = letters.map(el => ({
+        el,
+        ox: 0, oy: 0,
+        dx: 0, dy: 0,
+        vx: 0, vy: 0,
+    }));
 
-        // Espera la fuente, luego inicia
-        document.fonts.ready.then(() => {
-            cacheOrigins();
-            requestAnimationFrame(tick);
+    let mx = 0, my = 0, smx = 0, smy = 0;
+
+    window.addEventListener('mousemove', e => {
+        mx = (e.clientX / window.innerWidth  - 0.5) * 2;
+        my = (e.clientY / window.innerHeight - 0.5) * 2;
+    });
+    window.addEventListener('touchmove', e => {
+        mx = (e.touches[0].clientX / window.innerWidth  - 0.5) * 2;
+        my = (e.touches[0].clientY / window.innerHeight - 0.5) * 2;
+    }, { passive: true });
+
+    function cacheOrigins() {
+        state.forEach(s => {
+            const r = s.el.getBoundingClientRect();
+            s.ox = r.left + r.width  / 2;
+            s.oy = r.top  + r.height / 2;
+        });
+    }
+
+    document.fonts.ready.then(() => {
+        cacheOrigins();
+        requestAnimationFrame(loop);
+    });
+    window.addEventListener('resize', cacheOrigins);
+
+    const REPEL_R = Math.min(window.innerWidth, window.innerHeight) * 0.18;
+    const REPEL_F = 5;
+    const SPRING  = 0.032;
+    const DAMPING = 0.91;
+    const TILT_X  = 5;
+    const TILT_Y  = 7;
+    const FLOAT_A = 3;
+    const FLOAT_S = 0.5;
+
+    let t0 = null;
+
+    function loop(ts) {
+        requestAnimationFrame(loop);
+        if (!t0) t0 = ts;
+        const t   = (ts - t0) / 1000;
+        const sc  = window.scrollY;
+        const vh  = window.innerHeight;
+
+        /* ── Scroll: SDF vuela para arriba ── */
+        const scrollPct = Math.min(sc / (vh * 0.6), 1);
+        sdfWrap.style.transform = `translateY(${-scrollPct * vh * 0.7}px)`;
+        sdfWrap.style.opacity   = String(1 - scrollPct * 1.4);
+
+        /* ── Scroll: fotos con parallax ── */
+        nodes.forEach(n => {
+            const offsetY = sc * n.speed;
+            n.el.style.transform = `translateY(${-offsetY}px)`;
         });
 
-        window.addEventListener('resize', cacheOrigins);
+        updateNodeCenters();
+        drawNetwork();
 
-        const REPEL_R  = Math.min(window.innerWidth, window.innerHeight) * 0.18;
-        const REPEL_F  = 5;
-        const SPRING   = 0.032;
-        const DAMPING  = 0.91;
-        const TILT_X   = 5;
-        const TILT_Y   = 7;
-        const FLOAT_A  = 3;
-        const FLOAT_S  = 0.5;
+        /* ── Mouse suavizado ── */
+        smx += (mx - smx) * 0.04;
+        smy += (my - smy) * 0.04;
 
-        let t0 = null;
+        const mxPx = (mx * 0.5 + 0.5) * window.innerWidth;
+        const myPx = (my * 0.5 + 0.5) * window.innerHeight;
 
-        function tick(ts) {
-            requestAnimationFrame(tick);
-            if (!t0) t0 = ts;
-            const t = (ts - t0) / 1000;
+        const rx =  smy * TILT_X;
+        const ry = -smx * TILT_Y;
 
-            // Suaviza mouse
-            smx += (mx - smx) * 0.04;
-            smy += (my - smy) * 0.04;
+        state.forEach((s, i) => {
+            const cx   = s.ox + s.dx;
+            const cy   = s.oy + s.dy;
+            const ddx  = cx - mxPx;
+            const ddy  = cy - myPx;
+            const dist = Math.sqrt(ddx*ddx + ddy*ddy);
 
-            const mxPx = (mx * 0.5 + 0.5) * window.innerWidth;
-            const myPx = (my * 0.5 + 0.5) * window.innerHeight;
+            if (dist < REPEL_R && dist > 1) {
+                const str = Math.pow(1 - dist / REPEL_R, 2);
+                s.vx += (ddx / dist) * str * REPEL_F;
+                s.vy += (ddy / dist) * str * REPEL_F;
+            }
 
-            // Rotación global suavizada (efecto 3D de seguimiento)
-            const rx =  smy * TILT_X;
-            const ry = -smx * TILT_Y;
+            const floatTarget = Math.sin(t * FLOAT_S + i * 1.2) * FLOAT_A;
+            s.vx += (-s.dx) * SPRING;
+            s.vy += (floatTarget - s.dy) * SPRING;
+            s.vx *= DAMPING;
+            s.vy *= DAMPING;
+            s.dx += s.vx;
+            s.dy += s.vy;
 
-            state.forEach((s, i) => {
-                // Centro actual con desplazamiento
-                const cx = s.ox + s.dx;
-                const cy = s.oy + s.dy;
+            s.el.style.transform =
+                `translate(${s.dx.toFixed(2)}px, ${s.dy.toFixed(2)}px) ` +
+                `rotateX(${rx.toFixed(2)}deg) rotateY(${ry.toFixed(2)}deg)`;
+        });
+    }
 
-                // Distancia al mouse
-                const ddx = cx - mxPx;
-                const ddy = cy - myPx;
-                const dist = Math.sqrt(ddx * ddx + ddy * ddy);
+    /* ═══════════════════════════════════════════════════════
+       INTERSECTION OBSERVER — "Sobre Nosotros" aparece
+    ═══════════════════════════════════════════════════════ */
+    const obs = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+            if (e.isIntersecting) e.target.classList.add('visible');
+        });
+    }, { threshold: 0.2 });
 
-                // Repulsión suave
-                if (dist < REPEL_R && dist > 1) {
-                    const strength = Math.pow(1 - dist / REPEL_R, 2);
-                    s.vx += (ddx / dist) * strength * REPEL_F;
-                    s.vy += (ddy / dist) * strength * REPEL_F;
-                }
-
-                // Flotación vertical independiente por letra
-                const floatTarget = Math.sin(t * FLOAT_S + i * 1.2) * FLOAT_A;
-
-                // Resorte hacia origen + flotación
-                s.vx += (-s.dx) * SPRING;
-                s.vy += (floatTarget - s.dy) * SPRING;
-
-                // Amortiguación
-                s.vx *= DAMPING;
-                s.vy *= DAMPING;
-
-                s.dx += s.vx;
-                s.dy += s.vy;
-
-                s.el.style.transform =
-                    `translate(${s.dx.toFixed(2)}px, ${s.dy.toFixed(2)}px) ` +
-                    `rotateX(${rx.toFixed(2)}deg) ` +
-                    `rotateY(${ry.toFixed(2)}deg)`;
-            });
-        }
+    document.querySelectorAll('.sobre-title, .sobre-body').forEach(el => obs.observe(el));
     </script>
 
 </body>
