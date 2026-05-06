@@ -346,13 +346,16 @@
     let loopReady           = false;
     let interactionStrength = 0;
     let mouseMoveTimer      = null;
+    let mouseEnabled        = false;
+
+    // Grace period: ignorar todo evento de mouse durante el primer segundo
+    setTimeout(() => { mouseEnabled = true; }, 1000);
 
     function onMouse(x, y) {
-        if (sdfOpacity < 1) return;
+        if (!mouseEnabled || sdfOpacity < 1) return;
         mouseActive = true;
         mx = (x / window.innerWidth  - 0.5) * 2;
         my = (y / window.innerHeight - 0.5) * 2;
-        // Si el mouse deja de moverse por 200ms, desactiva la física
         clearTimeout(mouseMoveTimer);
         mouseMoveTimer = setTimeout(() => { mouseActive = false; }, 200);
     }
@@ -414,40 +417,40 @@
         const ry = -smx * TILT_Y * interactionStrength;
 
         state.forEach((s, i) => {
-            if (interactionStrength === 0) {
-                // Sin interacción: absolutamente estático
-                s.dx = 0; s.dy = 0; s.vx = 0; s.vy = 0;
-                s.el.style.transform = 'none';
-                return;
-            }
-
-            // Repulsión escalada
-            const r    = s.el.getBoundingClientRect();
-            const cx   = r.left + r.width  / 2;
-            const cy   = r.top  + r.height / 2;
-            const mxPx = (mx * 0.5 + 0.5) * window.innerWidth;
-            const myPx = (my * 0.5 + 0.5) * window.innerHeight;
-            const ddx  = cx - mxPx;
-            const ddy  = cy - myPx;
-            const dist = Math.sqrt(ddx*ddx + ddy*ddy);
-
-            if (dist < rr && dist > 1) {
-                const str = Math.pow(1 - dist / rr, 2) * interactionStrength;
-                s.vx += (ddx / dist) * str * REPEL_F;
-                s.vy += (ddy / dist) * str * REPEL_F;
-            }
-
-            // Float y spring escalados — 0 desplazamiento hasta que interactionStrength sube
+            // Spring siempre activo — lleva dx/dy a 0 suavemente
             s.vx += (-s.dx) * SPRING;
             s.vy += (Math.sin(t * FLOAT_S) * FLOAT_A * interactionStrength - s.dy) * SPRING;
+
+            if (mouseActive && interactionStrength > 0) {
+                const r    = s.el.getBoundingClientRect();
+                const cx   = r.left + r.width  / 2;
+                const cy   = r.top  + r.height / 2;
+                const mxPx = (mx * 0.5 + 0.5) * window.innerWidth;
+                const myPx = (my * 0.5 + 0.5) * window.innerHeight;
+                const ddx  = cx - mxPx;
+                const ddy  = cy - myPx;
+                const dist = Math.sqrt(ddx*ddx + ddy*ddy);
+                if (dist < rr && dist > 1) {
+                    const str = Math.pow(1 - dist / rr, 2) * interactionStrength;
+                    s.vx += (ddx / dist) * str * REPEL_F;
+                    s.vy += (ddy / dist) * str * REPEL_F;
+                }
+            }
+
             s.vx *= DAMPING;
             s.vy *= DAMPING;
             s.dx += s.vx;
             s.dy += s.vy;
 
-            s.el.style.transform =
-                `translate(${s.dx.toFixed(2)}px,${s.dy.toFixed(2)}px) ` +
-                `rotateX(${rx.toFixed(2)}deg) rotateY(${ry.toFixed(2)}deg)`;
+            // transform:none solo cuando realmente está en reposo en el centro
+            if (interactionStrength === 0 && Math.abs(s.dx) < 0.5 && Math.abs(s.dy) < 0.5) {
+                s.dx = 0; s.dy = 0; s.vx = 0; s.vy = 0;
+                s.el.style.transform = 'none';
+            } else {
+                s.el.style.transform =
+                    `translate(${s.dx.toFixed(2)}px,${s.dy.toFixed(2)}px) ` +
+                    `rotateX(${rx.toFixed(2)}deg) rotateY(${ry.toFixed(2)}deg)`;
+            }
         });
     }
 
