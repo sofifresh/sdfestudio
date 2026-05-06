@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SDF — Poster Generativo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #111110;
+      padding: 24px;
+      font-family: 'Space Mono', monospace;
+    }
+
+    #poster {
+      position: relative;
+      width: min(390px, 100%);
+      aspect-ratio: 3 / 4;
+      overflow: hidden;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    #poster-bg {
+      position: absolute;
+      inset: 0;
+      transition: background-color 0.7s ease;
+      z-index: 0;
+    }
+
+    #grid {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      gap: 2px;
+      grid-auto-flow: dense;
+      z-index: 1;
+      transition: opacity 0.35s ease;
+    }
+
+    #grid.fade-out { opacity: 0; }
+    #grid.fade-in  { opacity: 1; }
+
+    .cell {
+      position: relative;
+      overflow: hidden;
+      border-radius: 1px;
+      display: flex;
+      align-items: flex-end;
+      padding: 4px 5px;
+      min-width: 0;
+      min-height: 0;
+    }
+
+    .data-text {
+      font-family: 'Space Mono', monospace;
+      font-size: 8px;
+      font-weight: 400;
+      line-height: 1.45;
+      opacity: 0.32;
+      white-space: pre;
+      overflow: hidden;
+      pointer-events: none;
+      letter-spacing: -0.01em;
+    }
+
+    #overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 20px 22px;
+      pointer-events: none;
+    }
+
+    #top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    #sdf-logo {
+      font-size: 30px;
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: -0.04em;
+      transition: color 0.7s ease;
+    }
+
+    #meta {
+      font-size: 11px;
+      font-weight: 400;
+      line-height: 1.8;
+      text-align: right;
+      opacity: 0.75;
+      transition: color 0.7s ease;
+    }
+
+    #bottom-bar {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+
+    #headline {
+      font-size: clamp(18px, 6.5vw, 30px);
+      font-weight: 700;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+      text-transform: uppercase;
+      transition: color 0.7s ease;
+    }
+
+    #subtitle {
+      font-size: 11px;
+      font-weight: 400;
+      letter-spacing: 0.04em;
+      opacity: 0.85;
+      transition: color 0.7s ease;
+    }
+
+    #tagline {
+      font-size: 10px;
+      font-weight: 400;
+      opacity: 0.5;
+      letter-spacing: 0.02em;
+      transition: color 0.7s ease;
+    }
+  </style>
+</head>
+<body>
+
+<div id="poster">
+  <div id="poster-bg"></div>
+  <div id="grid"></div>
+  <div id="overlay">
+    <div id="top-bar">
+      <span id="sdf-logo">SDF</span>
+      <div id="meta"></div>
+    </div>
+    <div id="bottom-bar">
+      <p id="headline"></p>
+      <p id="subtitle"></p>
+      <p id="tagline"></p>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ── Paleta ─────────────────────────────────────────────── */
+const SAT   = ['#E63888','#FF6F42','#6558F5','#2AD2C9','#5BBF21','#FEDD00','#B580D1'];
+const DARK  = ['#0D0D0C','#1C1C1A','#4A4A46'];
+const LIGHT = ['#9C9A92','#D4D1C8','#EDEAE3','#F8F6F0'];
+
+/* ── Datos ─────────────────────────────────────────────── */
+const DATA = [
+  '7000.0 m','75.0%','94.0%','28.95','46.72','6.762','51.807/min',
+  '15.925°C','24.1','14.29','18.016°C','5129.709 kWh','4485.292',
+  '1349/m³','21572','367.5','6.213','30.019','BA—2026','SDF.001',
+  'SDF.002','V5.0','#E63888','520px','1:1.33','3/4','PMS 2039 C',
+  'PMS 2366 C','∆E 2.1','100%','0.618','π','∞','UX','UI','ID','BR',
+];
+
+/* ── Copy ──────────────────────────────────────────────── */
+const HEADLINES = [
+  'Diseño que construye.',
+  'Si tu marca no dice nada, no existe.',
+  'No hacemos genérico.',
+  'Estrategia estética construcción.',
+  'Pocos proyectos. Bien hechos.',
+  'Con intención o nada.',
+  'Branding UX/UI Producto.',
+];
+const SUBTITLES = [
+  'Branding — UX/UI — Producto digital',
+  'Estudio creativo multidisciplinario',
+  'Buenos Aires — 2026',
+  'sdf.design',
+  'Diseño con punto de vista',
+];
+const TAGLINES = [
+  'hi@sdf.design',
+  'Buenos Aires, Argentina',
+  '@sdf.design',
+  '—34.6037° S, —58.3816° W',
+  'Est. 2026 — BA',
+];
+
+/* ── Helpers ───────────────────────────────────────────── */
+let version = 1;
+
+const rand  = (a, b) => Math.random() * (b - a) + a;
+const pick  = arr => arr[Math.floor(Math.random() * arr.length)];
+const shuffle = arr => [...arr].sort(() => Math.random() - 0.5);
+
+function luma(hex) {
+  const r = parseInt(hex.slice(1,3),16)/255;
+  const g = parseInt(hex.slice(3,5),16)/255;
+  const b = parseInt(hex.slice(5,7),16)/255;
+  return 0.2126*r + 0.7152*g + 0.0722*b;
+}
+
+function toRgba(hex, a) {
+  const r = parseInt(hex.slice(1,3),16);
+  const g = parseInt(hex.slice(3,5),16);
+  const b = parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},${a.toFixed(2)})`;
+}
+
+/* ── Build grid ────────────────────────────────────────── */
+function buildGrid(palette, cols, rows) {
+  const grid = document.getElementById('grid');
+  grid.style.gridTemplateColumns = `repeat(${cols},1fr)`;
+  grid.style.gridTemplateRows    = `repeat(${rows},1fr)`;
+  grid.innerHTML = '';
+
+  const total = cols * rows;
+  for (let i = 0; i < total; i++) {
+    const cell    = document.createElement('div');
+    cell.className = 'cell';
+
+    const color   = pick(palette);
+    const opacity = rand(0.28, 1.0);
+    cell.style.backgroundColor = toRgba(color, opacity);
+
+    // Random spans for visual irregularity
+    if (Math.random() < 0.13) cell.style.gridColumn = 'span 2';
+    if (Math.random() < 0.09) cell.style.gridRow    = 'span 2';
+
+    // Data texture ~50%
+    if (Math.random() < 0.50) {
+      const lines = Math.random() < 0.3 ? 2 : 1;
+      const rows_txt = Array.from({length: lines}, () => pick(DATA)).join('\n');
+      const txt = document.createElement('span');
+      txt.className   = 'data-text';
+      txt.textContent = rows_txt;
+      txt.style.color = luma(color) > 0.45 ? '#0D0D0C' : '#F8F6F0';
+      cell.appendChild(txt);
+    }
+
+    grid.appendChild(cell);
+  }
+}
+
+/* ── Mutate ────────────────────────────────────────────── */
+function mutate() {
+  // Sub-paleta: 3 saturados + 1 oscuro + 1 claro
+  const sat    = shuffle(SAT).slice(0, 3);
+  const darkN  = pick(DARK);
+  const lightN = pick(LIGHT);
+  const palette = [...sat, darkN, lightN];
+
+  // Fondo: uno de los saturados o el oscuro
+  const bg      = pick([...sat, darkN]);
+  const bgLuma  = luma(bg);
+  const text    = bgLuma > 0.45 ? '#0D0D0C' : '#F8F6F0';
+  const accent  = sat.find(c => c !== bg) ?? sat[0];
+
+  // Dimensiones grilla
+  const cols = Math.floor(rand(4, 9));   // 4–8
+  const rows = Math.floor(rand(5, 10));  // 5–9
+
+  // Fondo con transición
+  document.getElementById('poster-bg').style.backgroundColor = bg;
+
+  // Overlay colors
+  document.getElementById('sdf-logo').style.color = accent;
+  ['meta','headline','subtitle','tagline'].forEach(id => {
+    document.getElementById(id).style.color = text;
+  });
+
+  // Copy
+  document.getElementById('headline').textContent = pick(HEADLINES);
+  document.getElementById('subtitle').textContent = pick(SUBTITLES);
+  document.getElementById('tagline').textContent  = pick(TAGLINES);
+  document.getElementById('meta').innerHTML = `2026.05<br>V${version++}`;
+
+  // Grid: fade out → rebuild → fade in
+  const grid = document.getElementById('grid');
+  grid.classList.add('fade-out');
+
+  setTimeout(() => {
+    buildGrid(palette, cols, rows);
+    grid.classList.remove('fade-out');
+    grid.classList.add('fade-in');
+    setTimeout(() => grid.classList.remove('fade-in'), 500);
+  }, 350);
+}
+
+/* ── Init ──────────────────────────────────────────────── */
+mutate();
+setInterval(mutate, 4000);
+document.getElementById('poster').addEventListener('click', mutate);
+</script>
+
+</body>
+</html>
