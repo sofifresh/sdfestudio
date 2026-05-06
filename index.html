@@ -100,8 +100,17 @@
             display: block;
             will-change: transform;
             user-select: none;
-            /* kerning apretado como en la referencia */
             margin: 0 -0.01em;
+            /* Extrusion 3D con sombras apiladas */
+            text-shadow:
+                1px 2px 0 #505050,
+                2px 4px 0 #454545,
+                3px 6px 0 #3a3a3a,
+                4px 8px 0 #303030,
+                5px 10px 0 #252525,
+                6px 12px 0 #1a1a1a,
+                7px 14px 0 #111,
+                10px 20px 35px rgba(0,0,0,0.8);
         }
 
         .hero-tagline {
@@ -359,14 +368,14 @@
 
         window.addEventListener('resize', cacheOrigins);
 
-        const REPEL_R  = Math.min(window.innerWidth, window.innerHeight) * 0.22;
-        const REPEL_F  = 18;
-        const SPRING   = 0.07;
-        const DAMPING  = 0.78;
-        const TILT_X   = 10;   // grados máx rotación X
-        const TILT_Y   = 14;   // grados máx rotación Y
-        const FLOAT_A  = 6;    // px amplitud flotación
-        const FLOAT_S  = 0.6;  // velocidad flotación
+        const REPEL_R  = Math.min(window.innerWidth, window.innerHeight) * 0.18;
+        const REPEL_F  = 5;
+        const SPRING   = 0.032;
+        const DAMPING  = 0.91;
+        const TILT_X   = 5;
+        const TILT_Y   = 7;
+        const FLOAT_A  = 3;
+        const FLOAT_S  = 0.5;
 
         let t0 = null;
 
@@ -376,8 +385,8 @@
             const t = (ts - t0) / 1000;
 
             // Suaviza mouse
-            smx += (mx - smx) * 0.07;
-            smy += (my - smy) * 0.07;
+            smx += (mx - smx) * 0.04;
+            smy += (my - smy) * 0.04;
 
             const mxPx = (mx * 0.5 + 0.5) * window.innerWidth;
             const myPx = (my * 0.5 + 0.5) * window.innerHeight;
