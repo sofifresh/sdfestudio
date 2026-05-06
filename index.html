@@ -20,116 +20,49 @@
             overflow-x: hidden;
         }
 
-        /* ─── NAV ─── */
+        /* NAV */
         nav {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%;
-            padding: 1.8rem 5vw;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+            position: fixed; top: 0; left: 0;
+            width: 100%; padding: 1.8rem 5vw;
+            display: flex; align-items: center; justify-content: space-between;
             z-index: 200;
         }
-        .nav-logo {
-            font-weight: 900;
-            font-size: 1.1rem;
-            letter-spacing: 0.35em;
-            color: white;
-            text-decoration: none;
-            text-transform: uppercase;
-        }
+        .nav-logo { font-weight: 900; font-size: 1.1rem; letter-spacing: 0.35em; color: white; text-decoration: none; text-transform: uppercase; }
         .nav-links { display: flex; gap: 3rem; list-style: none; }
-        .nav-links a {
-            color: rgba(255,255,255,0.5);
-            text-decoration: none;
-            font-size: 0.78rem;
-            letter-spacing: 0.2em;
-            text-transform: uppercase;
-            transition: color 0.3s;
-        }
+        .nav-links a { color: rgba(255,255,255,0.5); text-decoration: none; font-size: 0.78rem; letter-spacing: 0.2em; text-transform: uppercase; transition: color 0.3s; }
         .nav-links a:hover { color: white; }
-        .nav-menu-btn {
-            display: none;
-            flex-direction: column;
-            gap: 5px;
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 4px;
-        }
+        .nav-menu-btn { display: none; flex-direction: column; gap: 5px; background: none; border: none; cursor: pointer; padding: 4px; }
         .nav-menu-btn span { display: block; width: 24px; height: 1px; background: white; }
 
-        /* ─── HERO ─── */
+        /* HERO */
         #hero {
             position: relative;
-            width: 100%;
-            height: 100dvh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            width: 100%; height: 100dvh;
+            display: flex; align-items: center; justify-content: center;
             overflow: hidden;
             background: #080808;
         }
 
-        /* Canvas de red de imágenes (fondo) */
-        #network-canvas {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 0;
+        /* Fotos detrás del texto SDF */
+        #photos-back {
+            position: absolute; inset: 0;
+            z-index: 1; pointer-events: none;
         }
 
-        /* Contenedor de imágenes flotantes */
-        #photo-field {
-            position: absolute;
-            inset: 0;
-            z-index: 1;
-            pointer-events: none;
-        }
-
-        .photo-node {
-            position: absolute;
-            border-radius: 3px;
-            overflow: hidden;
-            opacity: 0.82;
-            will-change: transform;
-            box-shadow:
-                0 0 25px rgba(255,255,255,0.18),
-                0 0 60px rgba(255,255,255,0.07);
-        }
-        .photo-node img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-            filter: brightness(1.18) contrast(1.05) saturate(0.85);
-        }
-        /* Fotos que van por encima del texto SDF */
-        .photo-node.over-text {
-            z-index: 4;
-        }
-
-        /* Overlay oscuro sobre las fotos para que las letras resalten */
+        /* Overlay suave */
         #hero-overlay {
-            position: absolute;
-            inset: 0;
-            background: rgba(8,8,8,0.55);
+            position: absolute; inset: 0;
+            background: rgba(8,8,8,0.30);
             z-index: 2;
         }
 
         /* Letras SDF */
         #sdf-wrap {
-            position: relative;
-            z-index: 3;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            position: relative; z-index: 3;
+            display: flex; align-items: center; justify-content: center;
             perspective: 900px;
             will-change: transform, opacity;
         }
-
         .sdf-letter {
             font-family: 'Montserrat', sans-serif;
             font-weight: 900;
@@ -151,38 +84,53 @@
                 10px 20px 35px rgba(0,0,0,0.8);
         }
 
-        .hero-tagline {
-            position: absolute;
-            bottom: 11%;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: clamp(0.6rem, 1.4vw, 0.78rem);
-            letter-spacing: 0.5em;
-            text-transform: uppercase;
-            color: rgba(255,255,255,0.4);
-            white-space: nowrap;
-            z-index: 3;
+        /* Fotos encima del texto SDF */
+        #photos-front {
+            position: absolute; inset: 0;
+            z-index: 4; pointer-events: none;
         }
 
-        .scroll-indicator {
+        /* Canvas red (encima de todo, pointer-events none) */
+        #network-canvas {
+            position: absolute; inset: 0;
+            width: 100%; height: 100%;
+            z-index: 5; pointer-events: none;
+        }
+
+        /* Nodo foto */
+        .photo-node {
             position: absolute;
-            bottom: 4%;
-            left: 50%;
+            border-radius: 3px;
+            overflow: hidden;
+            opacity: 0.90;
+            will-change: transform;
+            box-shadow:
+                0 0 28px rgba(255,255,255,0.30),
+                0 0 70px rgba(255,255,255,0.10);
+        }
+        .photo-node img {
+            width: 100%; height: auto;
+            display: block;
+            filter: brightness(1.55) contrast(1.02) saturate(0.88);
+        }
+
+        /* Tagline y scroll indicator */
+        .hero-tagline {
+            position: absolute; bottom: 11%; left: 50%;
             transform: translateX(-50%);
-            z-index: 3;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 6px;
-            color: rgba(255,255,255,0.25);
-            font-size: 0.6rem;
-            letter-spacing: 0.3em;
-            text-transform: uppercase;
+            font-size: clamp(0.6rem, 1.4vw, 0.78rem);
+            letter-spacing: 0.5em; text-transform: uppercase;
+            color: rgba(255,255,255,0.4); white-space: nowrap; z-index: 6;
+        }
+        .scroll-indicator {
+            position: absolute; bottom: 4%; left: 50%;
+            transform: translateX(-50%); z-index: 6;
+            display: flex; flex-direction: column; align-items: center; gap: 6px;
+            color: rgba(255,255,255,0.25); font-size: 0.6rem;
+            letter-spacing: 0.3em; text-transform: uppercase;
         }
         .scroll-indicator::after {
-            content: '';
-            width: 1px;
-            height: 36px;
+            content: ''; width: 1px; height: 36px;
             background: rgba(255,255,255,0.25);
             animation: scrollDrop 2s ease infinite;
         }
@@ -193,148 +141,56 @@
             100% { transform: scaleY(0); transform-origin: bottom; }
         }
 
-        /* ─── SOBRE NOSOTROS ─── */
+        /* SOBRE NOSOTROS */
         #sobre {
-            position: relative;
-            min-height: 100dvh;
-            display: flex;
-            align-items: center;
-            overflow: hidden;
-            background: #080808;
+            position: relative; min-height: 100dvh;
+            display: flex; align-items: center;
+            overflow: hidden; background: #080808;
         }
-
         .sobre-inner {
-            position: relative;
-            z-index: 1;
-            padding: 10vh 5vw;
-            max-width: 1280px;
-            margin: 0 auto;
-            width: 100%;
+            position: relative; z-index: 1;
+            padding: 10vh 5vw; max-width: 1280px; margin: 0 auto; width: 100%;
         }
-
         .sobre-title {
-            font-family: 'Montserrat', sans-serif;
             font-weight: 900;
             font-size: min(13vw, 18vh);
-            line-height: 0.92;
-            letter-spacing: -0.02em;
-            color: #fff;
-            opacity: 0;
-            transform: translateY(60px);
+            line-height: 0.92; letter-spacing: -0.02em; color: #fff;
+            opacity: 0; transform: translateY(60px);
             transition: opacity 0.9s ease, transform 0.9s ease;
         }
-        .sobre-title.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
+        .sobre-title.visible { opacity: 1; transform: translateY(0); }
         .sobre-body {
-            margin-top: 4rem;
-            max-width: 560px;
-            font-size: 1.05rem;
-            line-height: 1.85;
-            color: rgba(255,255,255,0.5);
-            opacity: 0;
-            transform: translateY(40px);
+            margin-top: 4rem; max-width: 560px;
+            font-size: 1.05rem; line-height: 1.85; color: rgba(255,255,255,0.5);
+            opacity: 0; transform: translateY(40px);
             transition: opacity 0.9s ease 0.25s, transform 0.9s ease 0.25s;
         }
-        .sobre-body.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
+        .sobre-body.visible { opacity: 1; transform: translateY(0); }
 
-        /* ─── WORK ─── */
+        /* WORK */
         #work { border-top: 1px solid rgba(255,255,255,0.07); }
+        .section-inner { max-width: 1280px; margin: 0 auto; padding: 9rem 5vw; }
+        .label { font-size: 0.68rem; letter-spacing: 0.45em; text-transform: uppercase; color: rgba(255,255,255,0.35); margin-bottom: 2rem; }
+        .section-title { font-size: clamp(2.2rem, 5vw, 4.5rem); font-weight: 700; line-height: 1.08; letter-spacing: -0.02em; margin-bottom: 2rem; }
+        .section-body { font-size: 1.05rem; line-height: 1.85; color: rgba(255,255,255,0.5); max-width: 560px; }
 
-        .section-inner {
-            max-width: 1280px;
-            margin: 0 auto;
-            padding: 9rem 5vw;
-        }
-
-        .label {
-            font-size: 0.68rem;
-            letter-spacing: 0.45em;
-            text-transform: uppercase;
-            color: rgba(255,255,255,0.35);
-            margin-bottom: 2rem;
-        }
-
-        .section-title {
-            font-size: clamp(2.2rem, 5vw, 4.5rem);
-            font-weight: 700;
-            line-height: 1.08;
-            letter-spacing: -0.02em;
-            margin-bottom: 2rem;
-        }
-
-        .section-body {
-            font-size: 1.05rem;
-            line-height: 1.85;
-            color: rgba(255,255,255,0.5);
-            max-width: 560px;
-        }
-
-        .work-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1rem;
-            margin-top: 4rem;
-        }
-
-        .work-item {
-            aspect-ratio: 16/10;
-            background: #111;
-            border-radius: 3px;
-            position: relative;
-            overflow: hidden;
-            cursor: pointer;
-            transition: transform 0.5s cubic-bezier(.25,.46,.45,.94);
-        }
+        .work-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-top: 4rem; }
+        .work-item { aspect-ratio: 16/10; background: #111; border-radius: 3px; position: relative; overflow: hidden; cursor: pointer; transition: transform 0.5s cubic-bezier(.25,.46,.45,.94); }
         .work-item:hover { transform: scale(0.975); }
-        .work-item::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(to top, rgba(0,0,0,.6), transparent 60%);
-        }
-        .work-item-info {
-            position: absolute;
-            bottom: 1.5rem; left: 1.5rem;
-            z-index: 1;
-        }
+        .work-item::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,.6), transparent 60%); }
+        .work-item-info { position: absolute; bottom: 1.5rem; left: 1.5rem; z-index: 1; }
         .work-item-info h3 { font-size: .95rem; font-weight: 500; letter-spacing: .05em; }
         .work-item-info p  { font-size: .72rem; letter-spacing: .15em; color: rgba(255,255,255,.45); text-transform: uppercase; margin-top: .25rem; }
 
-        /* ─── CONTACT ─── */
+        /* CONTACT */
         #contact { border-top: 1px solid rgba(255,255,255,0.07); }
-
-        .contact-cta {
-            display: inline-block;
-            margin-top: 2.5rem;
-            font-size: clamp(1.4rem, 3.5vw, 2.8rem);
-            font-weight: 700;
-            color: white;
-            text-decoration: none;
-            border-bottom: 2px solid rgba(255,255,255,.2);
-            padding-bottom: .2rem;
-            transition: border-color .35s;
-        }
+        .contact-cta { display: inline-block; margin-top: 2.5rem; font-size: clamp(1.4rem, 3.5vw, 2.8rem); font-weight: 700; color: white; text-decoration: none; border-bottom: 2px solid rgba(255,255,255,.2); padding-bottom: .2rem; transition: border-color .35s; }
         .contact-cta:hover { border-color: white; }
 
-        /* ─── FOOTER ─── */
-        footer {
-            border-top: 1px solid rgba(255,255,255,0.07);
-            padding: 2rem 5vw;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            color: rgba(255,255,255,.25);
-            font-size: .75rem;
-            letter-spacing: .1em;
-        }
+        /* FOOTER */
+        footer { border-top: 1px solid rgba(255,255,255,0.07); padding: 2rem 5vw; display: flex; justify-content: space-between; align-items: center; color: rgba(255,255,255,.25); font-size: .75rem; letter-spacing: .1em; }
 
-        /* ─── RESPONSIVE ─── */
+        /* RESPONSIVE */
         @media (max-width: 768px) {
             .nav-links { display: none; }
             .nav-menu-btn { display: flex; }
@@ -356,41 +212,30 @@
             <li><a href="#work">Trabajo</a></li>
             <li><a href="#contact">Contacto</a></li>
         </ul>
-        <button class="nav-menu-btn" aria-label="Menú">
-            <span></span><span></span><span></span>
-        </button>
+        <button class="nav-menu-btn" aria-label="Menú"><span></span><span></span><span></span></button>
     </nav>
 
-    <!-- HERO ──────────────────────────────────────────────── -->
     <section id="hero">
-        <canvas id="network-canvas"></canvas>
-        <div id="photo-field"></div>
+        <div id="photos-back"></div>
         <div id="hero-overlay"></div>
-
         <div id="sdf-wrap">
             <span class="sdf-letter" id="sl-s">S</span>
             <span class="sdf-letter" id="sl-d">D</span>
             <span class="sdf-letter" id="sl-f">F</span>
         </div>
-
+        <div id="photos-front"></div>
+        <canvas id="network-canvas"></canvas>
         <p class="hero-tagline">Estudio de Diseño</p>
         <div class="scroll-indicator">Scroll</div>
     </section>
 
-    <!-- SOBRE NOSOTROS ────────────────────────────────────── -->
     <section id="sobre">
         <div class="sobre-inner">
             <h2 class="sobre-title">Sobre<br>Nosotros</h2>
-            <p class="sobre-body">
-                SDF es un estudio de diseño enfocado en crear experiencias visuales
-                significativas. Trabajamos en la intersección del diseño gráfico,
-                la identidad de marca y las experiencias digitales, con una mirada
-                social y un compromiso con las comunidades que nos rodean.
-            </p>
+            <p class="sobre-body">SDF es un estudio de diseño enfocado en crear experiencias visuales significativas. Trabajamos en la intersección del diseño gráfico, la identidad de marca y las experiencias digitales, con una mirada social y un compromiso con las comunidades que nos rodean.</p>
         </div>
     </section>
 
-    <!-- WORK ──────────────────────────────────────────────── -->
     <section id="work">
         <div class="section-inner">
             <p class="label">Trabajo</p>
@@ -404,7 +249,6 @@
         </div>
     </section>
 
-    <!-- CONTACT ───────────────────────────────────────────── -->
     <section id="contact">
         <div class="section-inner">
             <p class="label">Contacto</p>
@@ -419,68 +263,46 @@
     </footer>
 
     <script>
-    /* ═══════════════════════════════════════════════════════
-       FOTOS FLOTANTES + RED
-    ═══════════════════════════════════════════════════════ */
-    const PHOTOS = [
-        'img/foto1.jpg','img/foto2.jpg','img/foto3.jpg',
-        'img/foto4.jpg','img/foto5.jpg','img/foto6.jpg',
-        'img/foto7.jpg','img/foto8.jpg','img/foto9.jpg',
+    /* ─────────────────────────────────────────────────────
+       CONFIGURACIÓN DE FOTOS
+       w: ancho (vw) | x,y: posición % alejada de bordes
+       sp: parallax scroll | mp: parallax mouse
+       sc: escala en scroll | front: encima del SDF
+    ───────────────────────────────────────────────────── */
+    const CFG = [
+        { src:'img/foto1.jpg', w:16, x:8,  y:7,  sp:0.22, mp:0.016, sc: 0.0003,  front:false },
+        { src:'img/foto2.jpg', w:11, x:65, y:8,  sp:0.30, mp:0.022, sc:-0.0002,  front:false },
+        { src:'img/foto3.jpg', w:14, x:52, y:44, sp:0.15, mp:0.012, sc: 0.0004,  front:true  },
+        { src:'img/foto4.jpg', w:17, x:10, y:52, sp:0.25, mp:0.018, sc: 0,       front:false },
+        { src:'img/foto5.jpg', w:12, x:74, y:33, sp:0.20, mp:0.014, sc:-0.0003,  front:false },
+        { src:'img/foto6.jpg', w:18, x:28, y:58, sp:0.17, mp:0.015, sc: 0.0002,  front:true  },
+        { src:'img/foto7.jpg', w:13, x:40, y:10, sp:0.32, mp:0.020, sc: 0,       front:false },
+        { src:'img/foto8.jpg', w:17, x:16, y:26, sp:0.19, mp:0.017, sc: 0.0003,  front:true  },
+        { src:'img/foto9.jpg', w:16, x:76, y:60, sp:0.26, mp:0.013, sc:-0.0002,  front:false },
     ];
 
-    // Tamaños (más chicos que antes)
-    const SIZES = [
-        [13,17],[10,13],[15,19],[9,12],[12,16],
-        [11,14],[14,18],[8,11],[12,15],
-    ];
+    const backEl  = document.getElementById('photos-back');
+    const frontEl = document.getElementById('photos-front');
+    const canvas  = document.getElementById('network-canvas');
+    const ctx     = canvas.getContext('2d');
+    const sdfWrap = document.getElementById('sdf-wrap');
 
-    // Posiciones
-    const POSITIONS = [
-        [3,  4 ], [76, 6 ], [58, 52], [1,  58],
-        [83, 38], [32, 68], [51, 8 ], [22, 32],
-        [86, 70],
-    ];
-
-    // Parallax más fuerte
-    const SPEEDS = [0.18, 0.28, 0.12, 0.24, 0.20, 0.15, 0.30, 0.17, 0.22];
-
-    // Escala extra al scrollear (algunas crecen, otras no)
-    const SCALE_SCROLL = [0.0003, -0.0002, 0.0004, 0, -0.0003, 0.0002, 0, 0.0003, -0.0002];
-
-    // Índices que aparecen sobre las letras SDF
-    const OVER_TEXT = new Set([2, 5, 7]);
-
-    const field  = document.getElementById('photo-field');
-    const canvas = document.getElementById('network-canvas');
-    const ctx    = canvas.getContext('2d');
-
-    // Crea nodos de foto
-    const nodes = PHOTOS.map((src, i) => {
+    // Construye nodos
+    const nodes = CFG.map(c => {
         const el  = document.createElement('div');
         el.className = 'photo-node';
-        const [w, h] = SIZES[i];
-        const [x, y] = POSITIONS[i];
-        el.style.cssText = `
-            width:${w}vw; height:${h}vw;
-            left:${x}vw; top:${y}vh;
-        `;
-        if (OVER_TEXT.has(i)) el.classList.add('over-text');
+        el.style.cssText = `left:${c.x}vw; top:${c.y}vh; width:${c.w}vw;`;
 
         const img = document.createElement('img');
-        img.src = src;
+        img.src = c.src;
         img.loading = 'lazy';
         el.appendChild(img);
-        field.appendChild(el);
+        (c.front ? frontEl : backEl).appendChild(el);
 
-        return {
-            el,
-            speed: SPEEDS[i],
-            scaleScroll: SCALE_SCROLL[i],
-            cx: 0, cy: 0,
-        };
+        return { el, cfg: c, cx: 0, cy: 0 };
     });
 
-    // Resize canvas
+    // Canvas
     function resizeCanvas() {
         canvas.width  = window.innerWidth;
         canvas.height = window.innerHeight;
@@ -488,8 +310,7 @@
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
 
-    // Actualiza centros de nodos para dibujar la red
-    function updateNodeCenters() {
+    function updateCenters() {
         nodes.forEach(n => {
             const r = n.el.getBoundingClientRect();
             n.cx = r.left + r.width  / 2;
@@ -497,21 +318,19 @@
         });
     }
 
-    // Dibuja líneas entre TODOS los nodos
-    const DIAG = Math.sqrt(window.innerWidth ** 2 + window.innerHeight ** 2);
-
+    // Red: conecta TODOS los pares, alpha basado en distancia
     function drawNetwork() {
+        const diag = Math.sqrt(canvas.width ** 2 + canvas.height ** 2);
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         for (let i = 0; i < nodes.length; i++) {
             for (let j = i + 1; j < nodes.length; j++) {
                 const dx   = nodes[j].cx - nodes[i].cx;
                 const dy   = nodes[j].cy - nodes[i].cy;
                 const dist = Math.sqrt(dx * dx + dy * dy);
-                // Alpha: líneas cercanas más visibles, lejanas tenues pero presentes
-                const alpha = Math.max(0.04, 0.28 * Math.pow(1 - dist / DIAG, 2.5));
+                const alpha = Math.max(0.05, 0.38 * Math.pow(1 - dist / diag, 2));
                 ctx.beginPath();
                 ctx.strokeStyle = `rgba(255,255,255,${alpha.toFixed(3)})`;
-                ctx.lineWidth   = 0.7;
+                ctx.lineWidth   = 0.8;
                 ctx.moveTo(nodes[i].cx, nodes[i].cy);
                 ctx.lineTo(nodes[j].cx, nodes[j].cy);
                 ctx.stroke();
@@ -519,33 +338,18 @@
         }
     }
 
-    /* ═══════════════════════════════════════════════════════
-       LETRAS SDF — REPULSIÓN + SCROLL EXIT
-    ═══════════════════════════════════════════════════════ */
-    const letters = [
-        document.getElementById('sl-s'),
-        document.getElementById('sl-d'),
-        document.getElementById('sl-f'),
-    ];
-    const sdfWrap   = document.getElementById('sdf-wrap');
+    /* ── Letras SDF ── */
+    const letters = ['sl-s','sl-d','sl-f'].map(id => document.getElementById(id));
+    const state   = letters.map(el => ({ el, ox:0, oy:0, dx:0, dy:0, vx:0, vy:0 }));
 
-    const state = letters.map(el => ({
-        el,
-        ox: 0, oy: 0,
-        dx: 0, dy: 0,
-        vx: 0, vy: 0,
-    }));
+    let mx=0, my=0, smx=0, smy=0;
 
-    let mx = 0, my = 0, smx = 0, smy = 0;
-
-    window.addEventListener('mousemove', e => {
-        mx = (e.clientX / window.innerWidth  - 0.5) * 2;
-        my = (e.clientY / window.innerHeight - 0.5) * 2;
-    });
-    window.addEventListener('touchmove', e => {
-        mx = (e.touches[0].clientX / window.innerWidth  - 0.5) * 2;
-        my = (e.touches[0].clientY / window.innerHeight - 0.5) * 2;
-    }, { passive: true });
+    function onMouse(x, y) {
+        mx = (x / window.innerWidth  - 0.5) * 2;
+        my = (y / window.innerHeight - 0.5) * 2;
+    }
+    window.addEventListener('mousemove', e => onMouse(e.clientX, e.clientY));
+    window.addEventListener('touchmove', e => onMouse(e.touches[0].clientX, e.touches[0].clientY), { passive: true });
 
     function cacheOrigins() {
         state.forEach(s => {
@@ -555,54 +359,50 @@
         });
     }
 
-    document.fonts.ready.then(() => {
-        cacheOrigins();
-        requestAnimationFrame(loop);
-    });
+    document.fonts.ready.then(() => { cacheOrigins(); requestAnimationFrame(loop); });
     window.addEventListener('resize', cacheOrigins);
 
-    const REPEL_R = Math.min(window.innerWidth, window.innerHeight) * 0.18;
-    const REPEL_F = 5;
-    const SPRING  = 0.032;
-    const DAMPING = 0.91;
-    const TILT_X  = 5;
-    const TILT_Y  = 7;
-    const FLOAT_A = 3;
-    const FLOAT_S = 0.5;
+    const REPEL_F = 5, SPRING = 0.032, DAMPING = 0.91;
+    const TILT_X  = 5, TILT_Y = 7, FLOAT_A = 3, FLOAT_S = 0.5;
 
     let t0 = null;
 
     function loop(ts) {
         requestAnimationFrame(loop);
         if (!t0) t0 = ts;
-        const t   = (ts - t0) / 1000;
-        const sc  = window.scrollY;
-        const vh  = window.innerHeight;
+        const t  = (ts - t0) / 1000;
+        const sc = window.scrollY;
+        const vh = window.innerHeight;
 
-        /* ── Scroll: SDF vuela para arriba ── */
-        const scrollPct = Math.min(sc / (vh * 0.6), 1);
-        sdfWrap.style.transform = `translateY(${-scrollPct * vh * 0.7}px)`;
-        sdfWrap.style.opacity   = String(1 - scrollPct * 1.4);
+        // SDF vuela hacia arriba al scrollear
+        const pct = Math.min(sc / (vh * 0.6), 1);
+        sdfWrap.style.transform = `translateY(${-pct * vh * 0.7}px)`;
+        sdfWrap.style.opacity   = String(Math.max(0, 1 - pct * 1.4));
 
-        /* ── Scroll: fotos con parallax + escala ── */
-        nodes.forEach(n => {
-            const offsetY = sc * n.speed;
-            const scale   = 1 + sc * n.scaleScroll;
-            n.el.style.transform = `translateY(${-offsetY}px) scale(${scale.toFixed(4)})`;
-        });
-
-        updateNodeCenters();
-        drawNetwork();
-
-        /* ── Mouse suavizado ── */
+        // Mouse suavizado
         smx += (mx - smx) * 0.04;
         smy += (my - smy) * 0.04;
 
+        // Fotos: parallax scroll + escala + drift de mouse
+        nodes.forEach(n => {
+            const c      = n.cfg;
+            const offsetY = sc * c.sp;
+            const scale   = Math.max(0.6, 1 + sc * c.sc);
+            const mpx     = smx * c.mp * window.innerWidth;
+            const mpy     = smy * c.mp * window.innerHeight;
+            n.el.style.transform =
+                `translate(${mpx.toFixed(1)}px, ${(-offsetY + mpy).toFixed(1)}px) scale(${scale.toFixed(4)})`;
+        });
+
+        updateCenters();
+        drawNetwork();
+
+        // Letras: repulsión del mouse
+        const rr   = Math.min(window.innerWidth, window.innerHeight) * 0.18;
         const mxPx = (mx * 0.5 + 0.5) * window.innerWidth;
         const myPx = (my * 0.5 + 0.5) * window.innerHeight;
-
-        const rx =  smy * TILT_X;
-        const ry = -smx * TILT_Y;
+        const rx   =  smy * TILT_X;
+        const ry   = -smx * TILT_Y;
 
         state.forEach((s, i) => {
             const cx   = s.ox + s.dx;
@@ -611,35 +411,30 @@
             const ddy  = cy - myPx;
             const dist = Math.sqrt(ddx*ddx + ddy*ddy);
 
-            if (dist < REPEL_R && dist > 1) {
-                const str = Math.pow(1 - dist / REPEL_R, 2);
+            if (dist < rr && dist > 1) {
+                const str = Math.pow(1 - dist / rr, 2);
                 s.vx += (ddx / dist) * str * REPEL_F;
                 s.vy += (ddy / dist) * str * REPEL_F;
             }
 
-            const floatTarget = Math.sin(t * FLOAT_S + i * 1.2) * FLOAT_A;
             s.vx += (-s.dx) * SPRING;
-            s.vy += (floatTarget - s.dy) * SPRING;
+            s.vy += (Math.sin(t * FLOAT_S + i * 1.2) * FLOAT_A - s.dy) * SPRING;
             s.vx *= DAMPING;
             s.vy *= DAMPING;
             s.dx += s.vx;
             s.dy += s.vy;
 
             s.el.style.transform =
-                `translate(${s.dx.toFixed(2)}px, ${s.dy.toFixed(2)}px) ` +
+                `translate(${s.dx.toFixed(2)}px,${s.dy.toFixed(2)}px) ` +
                 `rotateX(${rx.toFixed(2)}deg) rotateY(${ry.toFixed(2)}deg)`;
         });
     }
 
-    /* ═══════════════════════════════════════════════════════
-       INTERSECTION OBSERVER — "Sobre Nosotros" aparece
-    ═══════════════════════════════════════════════════════ */
-    const obs = new IntersectionObserver(entries => {
-        entries.forEach(e => {
-            if (e.isIntersecting) e.target.classList.add('visible');
-        });
-    }, { threshold: 0.2 });
-
+    // "Sobre Nosotros" aparece con scroll
+    const obs = new IntersectionObserver(
+        entries => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); }),
+        { threshold: 0.2 }
+    );
     document.querySelectorAll('.sobre-title, .sobre-body').forEach(el => obs.observe(el));
     </script>
 
