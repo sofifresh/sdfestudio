@@ -390,13 +390,9 @@
 
     <script type="module">
         import * as THREE from 'three';
-        import { Text } from 'https://cdn.jsdelivr.net/npm/troika-three-text@0.49.1/dist/troika-three-text.esm.js';
 
-        const FONT_URL   = 'https://cdn.jsdelivr.net/npm/@fontsource/montserrat@5.0.17/files/montserrat-latin-700-normal.woff2';
-        const FONT_SIZE  = 3.2;
-        const SPACING    = 3.6;
-        const LETTERS    = ['S', 'D', 'F'];
-
+        const LETTERS   = ['S', 'D', 'F'];
+        const SPACING   = 3.4;
         const container = document.getElementById('canvas-container');
 
         // ── Renderer ───────────────────────────────────────
@@ -409,63 +405,70 @@
         // ── Scene & Camera ─────────────────────────────────
         const scene  = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 100);
-        camera.position.z = 12;
 
-        // Ajusta cámara para que las letras entren en pantalla en cualquier proporción
         function fitCamera() {
-            const aspect = container.clientWidth / container.clientHeight;
-            camera.aspect = aspect;
-            const totalSpan = SPACING * (LETTERS.length - 1) + FONT_SIZE * 0.8;
-            const vFOV = camera.fov * Math.PI / 180;
-            const hFOV = 2 * Math.atan(Math.tan(vFOV / 2) * aspect);
-            const requiredZ = (totalSpan / 0.82) / (2 * Math.tan(hFOV / 2));
-            camera.position.z = Math.max(requiredZ, 10);
+            const aspect    = container.clientWidth / container.clientHeight;
+            camera.aspect   = aspect;
+            const totalSpan = SPACING * (LETTERS.length - 1) + 2.8;
+            const vFOV      = camera.fov * Math.PI / 180;
+            const hFOV      = 2 * Math.atan(Math.tan(vFOV / 2) * aspect);
+            camera.position.z = Math.max((totalSpan / 0.78) / (2 * Math.tan(hFOV / 2)), 10);
             camera.updateProjectionMatrix();
         }
         fitCamera();
 
-        // ── Lights ─────────────────────────────────────────
-        scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+        // ── Crea textura de letra con canvas 2D ────────────
+        function makeLetterTexture(char) {
+            const SIZE = 512;
+            const cv   = document.createElement('canvas');
+            cv.width   = SIZE;
+            cv.height  = SIZE;
+            const ctx  = cv.getContext('2d');
 
-        const key = new THREE.DirectionalLight(0xffffff, 2.5);
-        key.position.set(4, 6, 8);
-        scene.add(key);
+            ctx.clearRect(0, 0, SIZE, SIZE);
+            ctx.fillStyle    = '#ffffff';
+            ctx.font         = `700 ${SIZE * 0.78}px Montserrat, sans-serif`;
+            ctx.textAlign    = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(char, SIZE / 2, SIZE / 2 + SIZE * 0.04);
 
-        const fill = new THREE.DirectionalLight(0x99bbff, 1.2);
-        fill.position.set(-6, -2, 5);
-        scene.add(fill);
+            const tex        = new THREE.CanvasTexture(cv);
+            tex.needsUpdate  = true;
+            return tex;
+        }
 
-        // ── Letters ────────────────────────────────────────
-        const meshes    = [];
-        const origins   = [];
+        // Carga Montserrat Bold antes de dibujar
+        const font = new FontFace(
+            'Montserrat',
+            'url(https://cdn.jsdelivr.net/npm/@fontsource/montserrat@5.0.17/files/montserrat-latin-700-normal.woff2)'
+        );
+
+        const meshes     = [];
+        const origins    = [];
         const velocities = [];
-        let   synced    = 0;
 
-        LETTERS.forEach((char, i) => {
-            const mesh = new Text();
-            mesh.text      = char;
-            mesh.font      = FONT_URL;
-            mesh.fontSize  = FONT_SIZE;
-            mesh.color     = 0xffffff;
-            mesh.anchorX   = 'center';
-            mesh.anchorY   = 'middle';
+        font.load().then(loaded => {
+            document.fonts.add(loaded);
 
             const totalW = SPACING * (LETTERS.length - 1);
-            const x = -totalW / 2 + i * SPACING;
-            mesh.position.set(x, 0, 0);
 
-            origins.push(new THREE.Vector3(x, 0, 0));
-            velocities.push(new THREE.Vector3());
+            LETTERS.forEach((char, i) => {
+                const tex  = makeLetterTexture(char);
+                const mat  = new THREE.MeshBasicMaterial({ map: tex, transparent: true, side: THREE.DoubleSide });
+                const geo  = new THREE.PlaneGeometry(2.6, 2.6);
+                const mesh = new THREE.Mesh(geo, mat);
 
-            mesh.sync(() => {
-                synced++;
-                if (synced === LETTERS.length) {
-                    container.classList.add('ready');
-                }
+                const x = -totalW / 2 + i * SPACING;
+                mesh.position.set(x, 0, 0);
+
+                origins.push(new THREE.Vector3(x, 0, 0));
+                velocities.push(new THREE.Vector3());
+
+                scene.add(mesh);
+                meshes.push(mesh);
             });
 
-            scene.add(mesh);
-            meshes.push(mesh);
+            container.classList.add('ready');
         });
 
         // ── Mouse / Touch → 3D ─────────────────────────────
@@ -487,50 +490,41 @@
         }, { passive: true });
 
         // ── Animation ──────────────────────────────────────
-        const clock = new THREE.Clock();
-        const REPEL_R  = 3.2;
-        const REPEL_F  = 0.10;
-        const SPRING   = 0.055;
-        const DAMPING  = 0.82;
-        const FLOAT_A  = 0.14;
-        const FLOAT_S  = 0.65;
+        const clock   = new THREE.Clock();
+        const REPEL_R = 3.0;
+        const REPEL_F = 0.10;
+        const SPRING  = 0.055;
+        const DAMPING = 0.82;
+        const FLOAT_A = 0.14;
+        const FLOAT_S = 0.65;
 
         function animate() {
             requestAnimationFrame(animate);
             const t = clock.getElapsedTime();
 
-            // Proyectar mouse a plano z=0
             raycaster.setFromCamera(mouse2D, camera);
             raycaster.ray.intersectPlane(repelPlane, mouse3D);
 
             meshes.forEach((mesh, i) => {
-                const origin = origins[i];
                 const vel    = velocities[i];
-
-                // Flotación suave, desfasada por letra
                 const floatY = Math.sin(t * FLOAT_S + i * 1.3) * FLOAT_A;
-                const target = new THREE.Vector3(origin.x, origin.y + floatY, origin.z);
+                const target = new THREE.Vector3(origins[i].x, origins[i].y + floatY, 0);
 
-                // Repulsión: la letra huye del cursor
+                // Repulsión
                 const away = new THREE.Vector3(
                     mesh.position.x - mouse3D.x,
                     mesh.position.y - mouse3D.y,
                     0
                 );
                 const dist = away.length();
-
                 if (dist < REPEL_R && dist > 0.01) {
                     const strength = Math.pow(1 - dist / REPEL_R, 2) * REPEL_F;
                     vel.addScaledVector(away.normalize(), strength);
                 }
 
-                // Resorte hacia la posición original
-                vel.addScaledVector(
-                    new THREE.Vector3().subVectors(target, mesh.position),
-                    SPRING
-                );
+                // Resorte
+                vel.addScaledVector(new THREE.Vector3().subVectors(target, mesh.position), SPRING);
                 vel.multiplyScalar(DAMPING);
-
                 mesh.position.add(vel);
             });
 
