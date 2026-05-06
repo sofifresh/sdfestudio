@@ -336,7 +336,7 @@
     const letters = ['sl-s','sl-d','sl-f'].map(id => document.getElementById(id));
     const state   = letters.map(el => ({ el, ox:0, oy:0, dx:0, dy:0, vx:0, vy:0 }));
 
-    let mx=9, my=9, smx=9, smy=9; // empieza fuera de pantalla
+    let mx=9, my=9, smx=0, smy=0; // mouse lejos para no repeler, tilt empieza en 0
 
     function onMouse(x, y) {
         mx = (x / window.innerWidth  - 0.5) * 2;
