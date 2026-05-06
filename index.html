@@ -70,7 +70,6 @@
             perspective: 900px;
             will-change: transform, opacity;
             opacity: 0;
-            transition: opacity 0.5s ease;
         }
         .sdf-letter {
             font-family: 'Montserrat', sans-serif;
@@ -335,10 +334,12 @@
 
     /* ── Letras SDF ── */
     const letters = ['sl-s','sl-d','sl-f'].map(id => document.getElementById(id));
-    const state   = letters.map(el => ({ el, ox:0, oy:0, dx:0, dy:0, vx:0, vy:0 }));
+    const state   = letters.map(el => ({ el, dx:0, dy:0, vx:0, vy:0 }));
 
     let mx=0, my=0, smx=0, smy=0;
     let mouseActive = false;
+    let sdfOpacity  = 0;
+    let loopReady   = false;
 
     function onMouse(x, y) {
         mouseActive = true;
@@ -348,29 +349,9 @@
     window.addEventListener('mousemove', e => onMouse(e.clientX, e.clientY));
     window.addEventListener('touchmove', e => onMouse(e.touches[0].clientX, e.touches[0].clientY), { passive: true });
 
-    function cacheOrigins() {
-        state.forEach(s => {
-            // Saca el transform temporalmente para leer la posición real
-            const prev = s.el.style.transform;
-            s.el.style.transform = 'none';
-            const r = s.el.getBoundingClientRect();
-            s.ox = r.left + r.width  / 2;
-            s.oy = r.top  + r.height / 2;
-            s.el.style.transform = prev;
-            // Resetea física para evitar saltos
-            s.dx = 0; s.dy = 0; s.vx = 0; s.vy = 0;
-        });
-    }
-
-    // Espera fuente + delay para que el layout esté estable, luego hace fade-in
     document.fonts.ready.then(() => {
-        setTimeout(() => {
-            cacheOrigins();
-            requestAnimationFrame(loop);
-            requestAnimationFrame(() => { sdfWrap.style.opacity = '1'; });
-        }, 300);
+        setTimeout(() => { loopReady = true; requestAnimationFrame(loop); }, 200);
     });
-    window.addEventListener('resize', () => setTimeout(cacheOrigins, 80));
 
     const REPEL_F = 4, SPRING = 0.018, DAMPING = 0.94;
     const TILT_X  = 2, TILT_Y = 3, FLOAT_A = 2.5, FLOAT_S = 0.45;
@@ -384,10 +365,13 @@
         const sc = window.scrollY;
         const vh = window.innerHeight;
 
+        // Fade-in suave al inicio
+        if (loopReady) sdfOpacity = Math.min(1, sdfOpacity + 0.04);
+
         // SDF vuela hacia arriba al scrollear
         const pct = Math.min(sc / (vh * 0.6), 1);
         sdfWrap.style.transform = `translateY(${-pct * vh * 0.7}px)`;
-        sdfWrap.style.opacity   = String(Math.max(0, 1 - pct * 1.4));
+        sdfWrap.style.opacity   = String(Math.min(sdfOpacity, Math.max(0, 1 - pct * 1.4)));
 
         // Mouse suavizado — solo si el usuario ya movió el mouse
         if (mouseActive) {
@@ -410,23 +394,27 @@
         drawNetwork();
 
         // Letras: repulsión del mouse
-        const rr   = Math.min(window.innerWidth, window.innerHeight) * 0.18;
-        const mxPx = mouseActive ? (mx * 0.5 + 0.5) * window.innerWidth  : -9999;
-        const myPx = mouseActive ? (my * 0.5 + 0.5) * window.innerHeight : -9999;
-        const rx   =  smy * TILT_X;
-        const ry   = -smx * TILT_Y;
+        const rr = Math.min(window.innerWidth, window.innerHeight) * 0.18;
+        const rx =  smy * TILT_X;
+        const ry = -smx * TILT_Y;
 
         state.forEach((s, i) => {
-            const cx   = s.ox + s.dx;
-            const cy   = s.oy + s.dy;
-            const ddx  = cx - mxPx;
-            const ddy  = cy - myPx;
-            const dist = Math.sqrt(ddx*ddx + ddy*ddy);
+            if (mouseActive) {
+                // Lee posición real en tiempo real — sin caching frágil
+                const r   = s.el.getBoundingClientRect();
+                const cx  = r.left + r.width  / 2;
+                const cy  = r.top  + r.height / 2;
+                const mxPx = (mx * 0.5 + 0.5) * window.innerWidth;
+                const myPx = (my * 0.5 + 0.5) * window.innerHeight;
+                const ddx  = cx - mxPx;
+                const ddy  = cy - myPx;
+                const dist = Math.sqrt(ddx*ddx + ddy*ddy);
 
-            if (dist < rr && dist > 1) {
-                const str = Math.pow(1 - dist / rr, 2);
-                s.vx += (ddx / dist) * str * REPEL_F;
-                s.vy += (ddy / dist) * str * REPEL_F;
+                if (dist < rr && dist > 1) {
+                    const str = Math.pow(1 - dist / rr, 2);
+                    s.vx += (ddx / dist) * str * REPEL_F;
+                    s.vy += (ddy / dist) * str * REPEL_F;
+                }
             }
 
             s.vx += (-s.dx) * SPRING;
