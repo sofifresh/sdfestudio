@@ -344,13 +344,17 @@
     let mouseActive         = false;
     let sdfOpacity          = 0;
     let loopReady           = false;
-    let interactionStrength = 0;   // 0 = estático, 1 = física completa
+    let interactionStrength = 0;
+    let mouseMoveTimer      = null;
 
     function onMouse(x, y) {
         if (sdfOpacity < 1) return;
         mouseActive = true;
         mx = (x / window.innerWidth  - 0.5) * 2;
         my = (y / window.innerHeight - 0.5) * 2;
+        // Si el mouse deja de moverse por 200ms, desactiva la física
+        clearTimeout(mouseMoveTimer);
+        mouseMoveTimer = setTimeout(() => { mouseActive = false; }, 200);
     }
     window.addEventListener('mousemove', e => onMouse(e.clientX, e.clientY));
     window.addEventListener('touchmove', e => onMouse(e.touches[0].clientX, e.touches[0].clientY), { passive: true });
@@ -379,18 +383,15 @@
         sdfWrap.style.transform = `translateY(${-pct * vh * 0.7}px)`;
         sdfWrap.style.opacity   = String(Math.min(sdfOpacity, Math.max(0, 1 - pct * 1.4)));
 
-        // Ramp-up de interacción: sube de 0→1 cuando hay mouse, baja a 0 si no
+        // Ramp-up suave: sube rápido al mover, baja gradual al detenerse
         if (mouseActive) {
-            interactionStrength = Math.min(1, interactionStrength + 0.025); // ~40 frames hasta plena fuerza
+            interactionStrength = Math.min(1, interactionStrength + 0.04);
+            smx += (mx - smx) * 0.06;
+            smy += (my - smy) * 0.06;
         } else {
-            interactionStrength = 0;
-            smx = 0; smy = 0;
-        }
-
-        // Mouse suavizado, escalado por la fuerza de interacción
-        if (mouseActive) {
-            smx += (mx - smx) * 0.025;
-            smy += (my - smy) * 0.025;
+            interactionStrength = Math.max(0, interactionStrength - 0.05);
+            smx *= 0.85;
+            smy *= 0.85;
         }
 
         // Fotos: parallax scroll + escala + drift de mouse
