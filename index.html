@@ -347,14 +347,23 @@
 
     function cacheOrigins() {
         state.forEach(s => {
+            // Saca el transform temporalmente para leer la posición real
+            const prev = s.el.style.transform;
+            s.el.style.transform = 'none';
             const r = s.el.getBoundingClientRect();
             s.ox = r.left + r.width  / 2;
             s.oy = r.top  + r.height / 2;
+            s.el.style.transform = prev;
+            // Resetea física para evitar saltos
+            s.dx = 0; s.dy = 0; s.vx = 0; s.vy = 0;
         });
     }
 
-    document.fonts.ready.then(() => { cacheOrigins(); requestAnimationFrame(loop); });
-    window.addEventListener('resize', cacheOrigins);
+    // Espera fuente + pequeño delay para que el layout esté estable
+    document.fonts.ready.then(() => {
+        setTimeout(() => { cacheOrigins(); requestAnimationFrame(loop); }, 120);
+    });
+    window.addEventListener('resize', () => setTimeout(cacheOrigins, 80));
 
     const REPEL_F = 4, SPRING = 0.018, DAMPING = 0.94;
     const TILT_X  = 2, TILT_Y = 3, FLOAT_A = 2.5, FLOAT_S = 0.45;
