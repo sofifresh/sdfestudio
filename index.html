@@ -341,12 +341,11 @@
     window.scrollTo(0, 0);
 
     let mx=0, my=0, smx=0, smy=0;
-    let mouseActive         = false;
-    let sdfOpacity          = 0;
-    let loopReady           = false;
-    let interactionStrength = 0;
-    let mouseMoveTimer      = null;
-    let mouseEnabled        = false;
+    let mouseActive    = false;
+    let sdfOpacity     = 0;
+    let loopReady      = false;
+    let mouseMoveTimer = null;
+    let mouseEnabled   = false;
 
     // Grace period: ignorar todo evento de mouse durante el primer segundo
     setTimeout(() => { mouseEnabled = true; }, 1000);
@@ -366,8 +365,8 @@
         setTimeout(() => { loopReady = true; requestAnimationFrame(loop); }, 250);
     });
 
-    const REPEL_F = 3, SPRING = 0.04, DAMPING = 0.88;
-    const TILT_X  = 2, TILT_Y = 3, FLOAT_A = 2.5, FLOAT_S = 0.45;
+    const REPEL_F = 3;
+    const TILT_X  = 2, TILT_Y = 3;
 
     let t0 = null;
 
@@ -386,15 +385,13 @@
         sdfWrap.style.transform = `translateY(${-pct * vh * 0.7}px)`;
         sdfWrap.style.opacity   = String(Math.min(sdfOpacity, Math.max(0, 1 - pct * 1.4)));
 
-        // Ramp-up suave: sube rápido al mover, baja gradual al detenerse
+        // Tilt suavizado
         if (mouseActive) {
-            interactionStrength = Math.min(1, interactionStrength + 0.04);
-            smx += (mx - smx) * 0.06;
-            smy += (my - smy) * 0.06;
+            smx += (mx - smx) * 0.08;
+            smy += (my - smy) * 0.08;
         } else {
-            interactionStrength = Math.max(0, interactionStrength - 0.05);
-            smx *= 0.85;
-            smy *= 0.85;
+            smx *= 0.80;
+            smy *= 0.80;
         }
 
         // Fotos: parallax scroll + escala + drift de mouse
@@ -411,17 +408,14 @@
         updateCenters();
         drawNetwork();
 
-        // Letras: física escalada por interactionStrength
-        const rr = Math.min(window.innerWidth, window.innerHeight) * 0.18;
-        const rx =  smy * TILT_X * interactionStrength;
-        const ry = -smx * TILT_Y * interactionStrength;
+        // Letras
+        const rr = Math.min(window.innerWidth, window.innerHeight) * 0.20;
+        const rx =  smy * TILT_X;
+        const ry = -smx * TILT_Y;
 
-        state.forEach((s, i) => {
-            // Spring siempre activo — lleva dx/dy a 0 suavemente
-            s.vx += (-s.dx) * SPRING;
-            s.vy += (Math.sin(t * FLOAT_S) * FLOAT_A * interactionStrength - s.dy) * SPRING;
-
-            if (mouseActive && interactionStrength > 0) {
+        state.forEach(s => {
+            if (mouseActive) {
+                // Repulsión cuando el mouse se mueve
                 const r    = s.el.getBoundingClientRect();
                 const cx   = r.left + r.width  / 2;
                 const cy   = r.top  + r.height / 2;
@@ -429,21 +423,30 @@
                 const myPx = (my * 0.5 + 0.5) * window.innerHeight;
                 const ddx  = cx - mxPx;
                 const ddy  = cy - myPx;
-                const dist = Math.sqrt(ddx*ddx + ddy*ddy);
+                const dist = Math.sqrt(ddx * ddx + ddy * ddy);
                 if (dist < rr && dist > 1) {
-                    const str = Math.pow(1 - dist / rr, 2) * interactionStrength;
+                    const str = Math.pow(1 - dist / rr, 2);
                     s.vx += (ddx / dist) * str * REPEL_F;
                     s.vy += (ddy / dist) * str * REPEL_F;
                 }
+                // Spring suave durante hover
+                s.vx += (-s.dx) * 0.03;
+                s.vy += (-s.dy) * 0.03;
+                s.vx *= 0.82;
+                s.vy *= 0.82;
+            } else {
+                // Retorno rápido y amortiguado al centro — sin oscilar
+                s.vx += (-s.dx) * 0.18;
+                s.vy += (-s.dy) * 0.18;
+                s.vx *= 0.65;
+                s.vy *= 0.65;
             }
 
-            s.vx *= DAMPING;
-            s.vy *= DAMPING;
             s.dx += s.vx;
             s.dy += s.vy;
 
-            // transform:none solo cuando realmente está en reposo en el centro
-            if (interactionStrength === 0 && Math.abs(s.dx) < 0.5 && Math.abs(s.dy) < 0.5) {
+            // Estático una vez en reposo
+            if (!mouseActive && Math.abs(s.dx) < 0.3 && Math.abs(s.dy) < 0.3) {
                 s.dx = 0; s.dy = 0; s.vx = 0; s.vy = 0;
                 s.el.style.transform = 'none';
             } else {
