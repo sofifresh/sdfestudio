@@ -336,7 +336,7 @@
     const letters = ['sl-s','sl-d','sl-f'].map(id => document.getElementById(id));
     const state   = letters.map(el => ({ el, ox:0, oy:0, dx:0, dy:0, vx:0, vy:0 }));
 
-    let mx=0, my=0, smx=0, smy=0;
+    let mx=9, my=9, smx=9, smy=9; // empieza fuera de pantalla
 
     function onMouse(x, y) {
         mx = (x / window.innerWidth  - 0.5) * 2;
@@ -356,8 +356,8 @@
     document.fonts.ready.then(() => { cacheOrigins(); requestAnimationFrame(loop); });
     window.addEventListener('resize', cacheOrigins);
 
-    const REPEL_F = 5, SPRING = 0.032, DAMPING = 0.91;
-    const TILT_X  = 5, TILT_Y = 7, FLOAT_A = 3, FLOAT_S = 0.5;
+    const REPEL_F = 4, SPRING = 0.018, DAMPING = 0.94;
+    const TILT_X  = 2, TILT_Y = 3, FLOAT_A = 2.5, FLOAT_S = 0.45;
 
     let t0 = null;
 
@@ -374,8 +374,8 @@
         sdfWrap.style.opacity   = String(Math.max(0, 1 - pct * 1.4));
 
         // Mouse suavizado
-        smx += (mx - smx) * 0.04;
-        smy += (my - smy) * 0.04;
+        smx += (mx - smx) * 0.025;
+        smy += (my - smy) * 0.025;
 
         // Fotos: parallax scroll + escala + drift de mouse
         nodes.forEach(n => {

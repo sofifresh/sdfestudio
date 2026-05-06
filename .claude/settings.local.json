@@ -21,7 +21,8 @@
       "Bash(cp /Users/sofi/.claude/image-cache/d0841579-f53b-4e29-b611-71e8add77c65/4.png /Users/sofi/Desktop/SDF/Code/VS/img/foto2.jpg)",
       "Bash(cp /Users/sofi/.claude/image-cache/d0841579-f53b-4e29-b611-71e8add77c65/5.png /Users/sofi/Desktop/SDF/Code/VS/img/foto3.jpg)",
       "Bash(cp /Users/sofi/.claude/image-cache/d0841579-f53b-4e29-b611-71e8add77c65/6.png /Users/sofi/Desktop/SDF/Code/VS/img/foto4.jpg)",
-      "Bash(cp /Users/sofi/.claude/image-cache/d0841579-f53b-4e29-b611-71e8add77c65/7.png /Users/sofi/Desktop/SDF/Code/VS/img/foto5.jpg)"
+      "Bash(cp /Users/sofi/.claude/image-cache/d0841579-f53b-4e29-b611-71e8add77c65/7.png /Users/sofi/Desktop/SDF/Code/VS/img/foto5.jpg)",
+      "Bash(git commit *)"
     ]
   }
 }
