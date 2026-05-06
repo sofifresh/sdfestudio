@@ -337,11 +337,13 @@
     const state   = letters.map(el => ({ el, dx:0, dy:0, vx:0, vy:0 }));
 
     let mx=0, my=0, smx=0, smy=0;
-    let mouseActive = false;
-    let sdfOpacity  = 0;
-    let loopReady   = false;
+    let mouseActive  = false;
+    let loopStarted  = false;
+    let sdfOpacity   = 0;
+    let loopReady    = false;
 
     function onMouse(x, y) {
+        if (!loopStarted) return;   // ignora eventos antes de que el loop esté listo
         mouseActive = true;
         mx = (x / window.innerWidth  - 0.5) * 2;
         my = (y / window.innerHeight - 0.5) * 2;
@@ -350,7 +352,11 @@
     window.addEventListener('touchmove', e => onMouse(e.touches[0].clientX, e.touches[0].clientY), { passive: true });
 
     document.fonts.ready.then(() => {
-        setTimeout(() => { loopReady = true; requestAnimationFrame(loop); }, 200);
+        setTimeout(() => {
+            loopStarted = true;
+            loopReady   = true;
+            requestAnimationFrame(loop);
+        }, 200);
     });
 
     const REPEL_F = 4, SPRING = 0.018, DAMPING = 0.94;
