@@ -65,10 +65,9 @@
 
         /* Letras SDF */
         #sdf-wrap {
-            position: relative; z-index: 4;
+            position: absolute; inset: 0; z-index: 4;
             display: flex; align-items: center; justify-content: center;
             perspective: 900px;
-            will-change: transform, opacity;
             opacity: 0;
         }
         .sdf-letter {
@@ -77,8 +76,7 @@
             font-size: 62vw;
             color: #fff;
             line-height: 0.82;
-            display: block;
-            width: 34vw;
+            flex: 0 0 34vw;
             text-align: center;
             overflow: visible;
             will-change: transform;
