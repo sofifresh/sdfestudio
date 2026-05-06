@@ -399,28 +399,33 @@
         updateCenters();
         drawNetwork();
 
-        // Letras: repulsión del mouse
+        // Letras: estáticas hasta el primer hover, luego física completa
         const rr = Math.min(window.innerWidth, window.innerHeight) * 0.18;
-        const rx =  smy * TILT_X;
-        const ry = -smx * TILT_Y;
+        const rx = mouseActive ?  smy * TILT_X : 0;
+        const ry = mouseActive ? -smx * TILT_Y : 0;
 
         state.forEach((s, i) => {
-            if (mouseActive) {
-                // Lee posición real en tiempo real — sin caching frágil
-                const r   = s.el.getBoundingClientRect();
-                const cx  = r.left + r.width  / 2;
-                const cy  = r.top  + r.height / 2;
-                const mxPx = (mx * 0.5 + 0.5) * window.innerWidth;
-                const myPx = (my * 0.5 + 0.5) * window.innerHeight;
-                const ddx  = cx - mxPx;
-                const ddy  = cy - myPx;
-                const dist = Math.sqrt(ddx*ddx + ddy*ddy);
+            if (!mouseActive) {
+                // Sin hover: completamente estático, sin ningún movimiento
+                s.dx = 0; s.dy = 0; s.vx = 0; s.vy = 0;
+                s.el.style.transform = 'none';
+                return;
+            }
 
-                if (dist < rr && dist > 1) {
-                    const str = Math.pow(1 - dist / rr, 2);
-                    s.vx += (ddx / dist) * str * REPEL_F;
-                    s.vy += (ddy / dist) * str * REPEL_F;
-                }
+            // Con hover: repulsión
+            const r    = s.el.getBoundingClientRect();
+            const cx   = r.left + r.width  / 2;
+            const cy   = r.top  + r.height / 2;
+            const mxPx = (mx * 0.5 + 0.5) * window.innerWidth;
+            const myPx = (my * 0.5 + 0.5) * window.innerHeight;
+            const ddx  = cx - mxPx;
+            const ddy  = cy - myPx;
+            const dist = Math.sqrt(ddx*ddx + ddy*ddy);
+
+            if (dist < rr && dist > 1) {
+                const str = Math.pow(1 - dist / rr, 2);
+                s.vx += (ddx / dist) * str * REPEL_F;
+                s.vy += (ddy / dist) * str * REPEL_F;
             }
 
             s.vx += (-s.dx) * SPRING;
