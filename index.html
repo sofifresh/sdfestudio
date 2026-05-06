@@ -78,9 +78,11 @@
             color: #fff;
             line-height: 0.82;
             display: block;
+            width: 34vw;
+            text-align: center;
+            overflow: visible;
             will-change: transform;
             user-select: none;
-            margin: 0 -0.05em;
             text-shadow:
                 2px 3px 0 #484848,
                 4px 6px 0 #3a3a3a,
@@ -418,7 +420,7 @@
             }
 
             s.vx += (-s.dx) * SPRING;
-            s.vy += (Math.sin(t * FLOAT_S + i * 1.2) * FLOAT_A - s.dy) * SPRING;
+            s.vy += (Math.sin(t * FLOAT_S) * FLOAT_A - s.dy) * SPRING;
             s.vx *= DAMPING;
             s.vy *= DAMPING;
             s.dx += s.vx;
