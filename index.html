@@ -93,15 +93,22 @@
             position: absolute;
             border-radius: 3px;
             overflow: hidden;
-            opacity: 0.75;
+            opacity: 0.82;
             will-change: transform;
+            box-shadow:
+                0 0 25px rgba(255,255,255,0.18),
+                0 0 60px rgba(255,255,255,0.07);
         }
         .photo-node img {
             width: 100%;
             height: 100%;
             object-fit: cover;
             display: block;
-            filter: grayscale(20%) contrast(1.05);
+            filter: brightness(1.18) contrast(1.05) saturate(0.85);
+        }
+        /* Fotos que van por encima del texto SDF */
+        .photo-node.over-text {
+            z-index: 4;
         }
 
         /* Overlay oscuro sobre las fotos para que las letras resalten */
@@ -421,21 +428,27 @@
         'img/foto7.jpg','img/foto8.jpg','img/foto9.jpg',
     ];
 
-    // Tamaños variados por foto (w%, h%)
+    // Tamaños (más chicos que antes)
     const SIZES = [
-        [18,24],[14,18],[20,26],[13,17],[17,22],
-        [15,20],[19,25],[12,16],[16,21],
+        [13,17],[10,13],[15,19],[9,12],[12,16],
+        [11,14],[14,18],[8,11],[12,15],
     ];
 
-    // Posiciones iniciales (% del viewport, evitando el centro)
+    // Posiciones
     const POSITIONS = [
-        [4,  5 ], [75, 8 ], [60, 55], [2,  60],
-        [82, 40], [30, 70], [50, 10], [20, 35],
-        [85, 72],
+        [3,  4 ], [76, 6 ], [58, 52], [1,  58],
+        [83, 38], [32, 68], [51, 8 ], [22, 32],
+        [86, 70],
     ];
 
-    // Velocidades de parallax diferentes por foto (factor)
-    const SPEEDS = [0.08, 0.14, 0.06, 0.12, 0.10, 0.07, 0.15, 0.09, 0.11];
+    // Parallax más fuerte
+    const SPEEDS = [0.18, 0.28, 0.12, 0.24, 0.20, 0.15, 0.30, 0.17, 0.22];
+
+    // Escala extra al scrollear (algunas crecen, otras no)
+    const SCALE_SCROLL = [0.0003, -0.0002, 0.0004, 0, -0.0003, 0.0002, 0, 0.0003, -0.0002];
+
+    // Índices que aparecen sobre las letras SDF
+    const OVER_TEXT = new Set([2, 5, 7]);
 
     const field  = document.getElementById('photo-field');
     const canvas = document.getElementById('network-canvas');
@@ -451,6 +464,8 @@
             width:${w}vw; height:${h}vw;
             left:${x}vw; top:${y}vh;
         `;
+        if (OVER_TEXT.has(i)) el.classList.add('over-text');
+
         const img = document.createElement('img');
         img.src = src;
         img.loading = 'lazy';
@@ -459,10 +474,9 @@
 
         return {
             el,
-            baseX: x,   // % vw
-            baseY: y,   // % vh
             speed: SPEEDS[i],
-            cx: 0, cy: 0, // centro actual en px (para líneas)
+            scaleScroll: SCALE_SCROLL[i],
+            cx: 0, cy: 0,
         };
     });
 
@@ -483,8 +497,8 @@
         });
     }
 
-    // Dibuja líneas entre nodos cercanos
-    const LINE_DIST = Math.min(window.innerWidth, window.innerHeight) * 0.55;
+    // Dibuja líneas entre TODOS los nodos
+    const DIAG = Math.sqrt(window.innerWidth ** 2 + window.innerHeight ** 2);
 
     function drawNetwork() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -492,16 +506,15 @@
             for (let j = i + 1; j < nodes.length; j++) {
                 const dx   = nodes[j].cx - nodes[i].cx;
                 const dy   = nodes[j].cy - nodes[i].cy;
-                const dist = Math.sqrt(dx*dx + dy*dy);
-                if (dist < LINE_DIST) {
-                    const alpha = (1 - dist / LINE_DIST) * 0.25;
-                    ctx.beginPath();
-                    ctx.strokeStyle = `rgba(255,255,255,${alpha})`;
-                    ctx.lineWidth   = 0.6;
-                    ctx.moveTo(nodes[i].cx, nodes[i].cy);
-                    ctx.lineTo(nodes[j].cx, nodes[j].cy);
-                    ctx.stroke();
-                }
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                // Alpha: líneas cercanas más visibles, lejanas tenues pero presentes
+                const alpha = Math.max(0.04, 0.28 * Math.pow(1 - dist / DIAG, 2.5));
+                ctx.beginPath();
+                ctx.strokeStyle = `rgba(255,255,255,${alpha.toFixed(3)})`;
+                ctx.lineWidth   = 0.7;
+                ctx.moveTo(nodes[i].cx, nodes[i].cy);
+                ctx.lineTo(nodes[j].cx, nodes[j].cy);
+                ctx.stroke();
             }
         }
     }
@@ -571,10 +584,11 @@
         sdfWrap.style.transform = `translateY(${-scrollPct * vh * 0.7}px)`;
         sdfWrap.style.opacity   = String(1 - scrollPct * 1.4);
 
-        /* ── Scroll: fotos con parallax ── */
+        /* ── Scroll: fotos con parallax + escala ── */
         nodes.forEach(n => {
             const offsetY = sc * n.speed;
-            n.el.style.transform = `translateY(${-offsetY}px)`;
+            const scale   = 1 + sc * n.scaleScroll;
+            n.el.style.transform = `translateY(${-offsetY}px) scale(${scale.toFixed(4)})`;
         });
 
         updateNodeCenters();
