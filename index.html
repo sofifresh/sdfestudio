@@ -336,14 +336,18 @@
     const letters = ['sl-s','sl-d','sl-f'].map(id => document.getElementById(id));
     const state   = letters.map(el => ({ el, dx:0, dy:0, vx:0, vy:0 }));
 
+    // Evita restauración de scroll del browser al recargar
+    history.scrollRestoration = 'manual';
+    window.scrollTo(0, 0);
+
     let mx=0, my=0, smx=0, smy=0;
-    let mouseActive  = false;
-    let loopStarted  = false;
-    let sdfOpacity   = 0;
-    let loopReady    = false;
+    let mouseActive = false;
+    let sdfOpacity  = 0;
+    let loopReady   = false;
 
     function onMouse(x, y) {
-        if (!loopStarted) return;   // ignora eventos antes de que el loop esté listo
+        // Solo acepta mouse cuando las letras ya son completamente visibles
+        if (sdfOpacity < 1) return;
         mouseActive = true;
         mx = (x / window.innerWidth  - 0.5) * 2;
         my = (y / window.innerHeight - 0.5) * 2;
@@ -352,14 +356,10 @@
     window.addEventListener('touchmove', e => onMouse(e.touches[0].clientX, e.touches[0].clientY), { passive: true });
 
     document.fonts.ready.then(() => {
-        setTimeout(() => {
-            loopStarted = true;
-            loopReady   = true;
-            requestAnimationFrame(loop);
-        }, 200);
+        setTimeout(() => { loopReady = true; requestAnimationFrame(loop); }, 250);
     });
 
-    const REPEL_F = 4, SPRING = 0.018, DAMPING = 0.94;
+    const REPEL_F = 3, SPRING = 0.04, DAMPING = 0.88;
     const TILT_X  = 2, TILT_Y = 3, FLOAT_A = 2.5, FLOAT_S = 0.45;
 
     let t0 = null;
