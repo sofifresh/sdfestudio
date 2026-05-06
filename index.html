@@ -341,12 +341,12 @@
     window.scrollTo(0, 0);
 
     let mx=0, my=0, smx=0, smy=0;
-    let mouseActive = false;
-    let sdfOpacity  = 0;
-    let loopReady   = false;
+    let mouseActive         = false;
+    let sdfOpacity          = 0;
+    let loopReady           = false;
+    let interactionStrength = 0;   // 0 = estático, 1 = física completa
 
     function onMouse(x, y) {
-        // Solo acepta mouse cuando las letras ya son completamente visibles
         if (sdfOpacity < 1) return;
         mouseActive = true;
         mx = (x / window.innerWidth  - 0.5) * 2;
@@ -379,7 +379,15 @@
         sdfWrap.style.transform = `translateY(${-pct * vh * 0.7}px)`;
         sdfWrap.style.opacity   = String(Math.min(sdfOpacity, Math.max(0, 1 - pct * 1.4)));
 
-        // Mouse suavizado — solo si el usuario ya movió el mouse
+        // Ramp-up de interacción: sube de 0→1 cuando hay mouse, baja a 0 si no
+        if (mouseActive) {
+            interactionStrength = Math.min(1, interactionStrength + 0.025); // ~40 frames hasta plena fuerza
+        } else {
+            interactionStrength = 0;
+            smx = 0; smy = 0;
+        }
+
+        // Mouse suavizado, escalado por la fuerza de interacción
         if (mouseActive) {
             smx += (mx - smx) * 0.025;
             smy += (my - smy) * 0.025;
@@ -387,7 +395,7 @@
 
         // Fotos: parallax scroll + escala + drift de mouse
         nodes.forEach(n => {
-            const c      = n.cfg;
+            const c       = n.cfg;
             const offsetY = sc * c.sp;
             const scale   = Math.max(0.6, 1 + sc * c.sc);
             const mpx     = smx * c.mp * window.innerWidth;
@@ -399,20 +407,20 @@
         updateCenters();
         drawNetwork();
 
-        // Letras: estáticas hasta el primer hover, luego física completa
+        // Letras: física escalada por interactionStrength
         const rr = Math.min(window.innerWidth, window.innerHeight) * 0.18;
-        const rx = mouseActive ?  smy * TILT_X : 0;
-        const ry = mouseActive ? -smx * TILT_Y : 0;
+        const rx =  smy * TILT_X * interactionStrength;
+        const ry = -smx * TILT_Y * interactionStrength;
 
         state.forEach((s, i) => {
-            if (!mouseActive) {
-                // Sin hover: completamente estático, sin ningún movimiento
+            if (interactionStrength === 0) {
+                // Sin interacción: absolutamente estático
                 s.dx = 0; s.dy = 0; s.vx = 0; s.vy = 0;
                 s.el.style.transform = 'none';
                 return;
             }
 
-            // Con hover: repulsión
+            // Repulsión escalada
             const r    = s.el.getBoundingClientRect();
             const cx   = r.left + r.width  / 2;
             const cy   = r.top  + r.height / 2;
@@ -423,13 +431,14 @@
             const dist = Math.sqrt(ddx*ddx + ddy*ddy);
 
             if (dist < rr && dist > 1) {
-                const str = Math.pow(1 - dist / rr, 2);
+                const str = Math.pow(1 - dist / rr, 2) * interactionStrength;
                 s.vx += (ddx / dist) * str * REPEL_F;
                 s.vy += (ddy / dist) * str * REPEL_F;
             }
 
+            // Float y spring escalados — 0 desplazamiento hasta que interactionStrength sube
             s.vx += (-s.dx) * SPRING;
-            s.vy += (Math.sin(t * FLOAT_S) * FLOAT_A - s.dy) * SPRING;
+            s.vy += (Math.sin(t * FLOAT_S) * FLOAT_A * interactionStrength - s.dy) * SPRING;
             s.vx *= DAMPING;
             s.vy *= DAMPING;
             s.dx += s.vx;
