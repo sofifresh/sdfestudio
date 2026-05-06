@@ -43,22 +43,29 @@
             background: #080808;
         }
 
-        /* Fotos detrás del texto SDF */
+        /* Canvas red — detrás de las fotos */
+        #network-canvas {
+            position: absolute; inset: 0;
+            width: 100%; height: 100%;
+            z-index: 1; pointer-events: none;
+        }
+
+        /* Fotos — encima de la red, detrás del texto */
         #photos-back {
             position: absolute; inset: 0;
-            z-index: 1; pointer-events: none;
+            z-index: 2; pointer-events: none;
         }
 
         /* Overlay suave */
         #hero-overlay {
             position: absolute; inset: 0;
             background: rgba(8,8,8,0.30);
-            z-index: 2;
+            z-index: 3;
         }
 
         /* Letras SDF */
         #sdf-wrap {
-            position: relative; z-index: 3;
+            position: relative; z-index: 4;
             display: flex; align-items: center; justify-content: center;
             perspective: 900px;
             will-change: transform, opacity;
@@ -84,18 +91,7 @@
                 10px 20px 35px rgba(0,0,0,0.8);
         }
 
-        /* Fotos encima del texto SDF */
-        #photos-front {
-            position: absolute; inset: 0;
-            z-index: 4; pointer-events: none;
-        }
-
-        /* Canvas red (encima de todo, pointer-events none) */
-        #network-canvas {
-            position: absolute; inset: 0;
-            width: 100%; height: 100%;
-            z-index: 5; pointer-events: none;
-        }
+        /* Tagline y scroll — encima de todo */
 
         /* Nodo foto */
         .photo-node {
@@ -216,6 +212,7 @@
     </nav>
 
     <section id="hero">
+        <canvas id="network-canvas"></canvas>
         <div id="photos-back"></div>
         <div id="hero-overlay"></div>
         <div id="sdf-wrap">
@@ -223,8 +220,6 @@
             <span class="sdf-letter" id="sl-d">D</span>
             <span class="sdf-letter" id="sl-f">F</span>
         </div>
-        <div id="photos-front"></div>
-        <canvas id="network-canvas"></canvas>
         <p class="hero-tagline">Estudio de Diseño</p>
         <div class="scroll-indicator">Scroll</div>
     </section>
@@ -270,19 +265,18 @@
        sc: escala en scroll | front: encima del SDF
     ───────────────────────────────────────────────────── */
     const CFG = [
-        { src:'img/foto1.jpg', w:16, x:8,  y:7,  sp:0.22, mp:0.016, sc: 0.0003,  front:false },
-        { src:'img/foto2.jpg', w:11, x:65, y:8,  sp:0.30, mp:0.022, sc:-0.0002,  front:false },
-        { src:'img/foto3.jpg', w:14, x:52, y:44, sp:0.15, mp:0.012, sc: 0.0004,  front:true  },
-        { src:'img/foto4.jpg', w:17, x:10, y:52, sp:0.25, mp:0.018, sc: 0,       front:false },
-        { src:'img/foto5.jpg', w:12, x:74, y:33, sp:0.20, mp:0.014, sc:-0.0003,  front:false },
-        { src:'img/foto6.jpg', w:18, x:28, y:58, sp:0.17, mp:0.015, sc: 0.0002,  front:true  },
-        { src:'img/foto7.jpg', w:13, x:40, y:10, sp:0.32, mp:0.020, sc: 0,       front:false },
-        { src:'img/foto8.jpg', w:17, x:16, y:26, sp:0.19, mp:0.017, sc: 0.0003,  front:true  },
-        { src:'img/foto9.jpg', w:16, x:76, y:60, sp:0.26, mp:0.013, sc:-0.0002,  front:false },
+        { src:'img/foto1.jpg', w:16, x:8,  y:7,  sp:0.55, mp:0.016, sc: 0.0003  },
+        { src:'img/foto2.jpg', w:11, x:65, y:8,  sp:0.70, mp:0.022, sc:-0.0002  },
+        { src:'img/foto3.jpg', w:14, x:52, y:44, sp:0.40, mp:0.012, sc: 0.0004  },
+        { src:'img/foto4.jpg', w:17, x:10, y:52, sp:0.60, mp:0.018, sc: 0       },
+        { src:'img/foto5.jpg', w:12, x:74, y:33, sp:0.50, mp:0.014, sc:-0.0003  },
+        { src:'img/foto6.jpg', w:18, x:28, y:58, sp:0.45, mp:0.015, sc: 0.0002  },
+        { src:'img/foto7.jpg', w:13, x:40, y:10, sp:0.75, mp:0.020, sc: 0       },
+        { src:'img/foto8.jpg', w:17, x:16, y:26, sp:0.48, mp:0.017, sc: 0.0003  },
+        { src:'img/foto9.jpg', w:16, x:76, y:60, sp:0.62, mp:0.013, sc:-0.0002  },
     ];
 
     const backEl  = document.getElementById('photos-back');
-    const frontEl = document.getElementById('photos-front');
     const canvas  = document.getElementById('network-canvas');
     const ctx     = canvas.getContext('2d');
     const sdfWrap = document.getElementById('sdf-wrap');
@@ -297,7 +291,7 @@
         img.src = c.src;
         img.loading = 'lazy';
         el.appendChild(img);
-        (c.front ? frontEl : backEl).appendChild(el);
+        backEl.appendChild(el);
 
         return { el, cfg: c, cx: 0, cy: 0 };
     });
